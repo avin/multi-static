@@ -24,7 +24,7 @@ for (const [staticPath, serveLocation] of config.mapping) {
     );
 
     // Только если файла еще нет в месте назначения
-    if (!fs.ensureFileSync(destinationFile)) {
+    if (!fs.pathExistsSync(destinationFile)) {
       const data = fs.readFileSync(file, 'utf8');
 
       // TODO тут обработать содержимое

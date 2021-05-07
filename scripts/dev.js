@@ -2,9 +2,7 @@ const argv = require('yargs').argv;
 const path = require('path');
 const https = require('https');
 const _ = require('lodash');
-const fs = require('fs-extra');
 const express = require('express');
-const mime = require('mime-types');
 const { readConfig } = require('./common');
 
 // Грузим конфигурацию пользователя
@@ -34,25 +32,9 @@ app.use(function (req, res, next) {
       // Составляем имя файла
       const fileSrc = path.join(process.cwd(), staticPath, cleanServeLocation);
 
-      // Читаем содержимое файла
-      let data;
-      try {
-        data = fs.readFileSync(fileSrc, 'utf8');
-      } catch (e) {
-        console.log('read error');
-      }
-
-      // Если что-то прочиталось - отдаем содержимое
-      if (data !== undefined) {
-
-        // TODO тут обработать содержимое
-
-        const mimeType = mime.lookup(cleanServeLocation);
-        if (mimeType) {
-          res.setHeader('Content-Type', mimeType);
-        }
-
-        return res.send(data);
+      const success = config.fileDevProcessing({ fileSrc, res, next });
+      if (success) {
+        return;
       }
     }
   }

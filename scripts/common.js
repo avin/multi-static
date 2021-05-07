@@ -1,6 +1,33 @@
 const path = require('path');
 const fs = require('fs-extra');
 const _ = require('lodash');
+const mime = require('mime-types');
+
+const defaultFileDevProcessing = ({ fileSrc, res, next }) => {
+  console.log(fileSrc);
+
+  // Читаем содержимое файла
+  let data;
+  try {
+    if (fs.pathExistsSync(fileSrc)) {
+      data = fs.readFileSync(fileSrc, 'utf8');
+    }
+  } catch (e) {
+    console.log('read error');
+  }
+
+  // Если что-то прочиталось - отдаем содержимое
+  if (data !== undefined) {
+    // TODO тут обработать содержимое
+
+    const mimeType = mime.lookup(fileSrc);
+    if (mimeType) {
+      res.setHeader('Content-Type', mimeType);
+    }
+
+    return res.send(data);
+  }
+};
 
 // Дефолтный конфиг
 const defaultConfig = {
@@ -12,6 +39,8 @@ const defaultConfig = {
   },
   buildPath: path.join(process.cwd(), 'build'),
   mapping: [],
+  fileDevProcessing: defaultFileDevProcessing,
+  fileBuildProcessing: () => {},
 };
 
 // Прочитать пользователский конфиг
@@ -42,8 +71,11 @@ const getFilesList = (dir, pathList = []) => {
   return pathList;
 };
 
+const defaultFileBuildProcessing = ({ fileSrc, res }) => {};
+
 module.exports = {
   defaultConfig,
   readConfig,
-  getFilesList
+  getFilesList,
+  defaultFileDevProcessing,
 };
