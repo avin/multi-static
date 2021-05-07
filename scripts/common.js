@@ -66,7 +66,7 @@ const readConfig = (userConfigSrc) => {
     _.merge(config, userConfig);
   } catch (e) {
     console.error('Wrong config');
-    console.log(e);
+    console.error(e);
     process.exit();
   }
 
