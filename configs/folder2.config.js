@@ -4,9 +4,13 @@ module.exports = {
   ...commonConfig,
 
   mapping: [
-    ['./static/folder1', '/root'],
+    ['./static/folder2', '/root'],
     ['./static/_common', '/root'],
   ],
 
-  welcomeMessage: 'hello from folder1.config',
+  internalParams: {
+    foo: 'azz11'
+  },
+
+  welcomeMessage: 'hello from folder2.config',
 };

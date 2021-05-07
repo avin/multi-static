@@ -3,9 +3,7 @@ const fs = require('fs-extra');
 const _ = require('lodash');
 const mime = require('mime-types');
 
-const defaultFileDevProcessing = ({ fileSrc, res }) => {
-  console.log(fileSrc);
-
+const defaultFileDevProcessing = ({ fileSrc, res, modifyData = (data) => data }) => {
   // Читаем содержимое файла
   let data;
   try {
@@ -18,7 +16,7 @@ const defaultFileDevProcessing = ({ fileSrc, res }) => {
 
   // Если что-то прочиталось - отдаем содержимое
   if (data !== undefined) {
-    // TODO тут можно обработать содержимое
+    data = modifyData(data, fileSrc);
 
     const mimeType = mime.lookup(fileSrc);
     if (mimeType) {
@@ -29,12 +27,16 @@ const defaultFileDevProcessing = ({ fileSrc, res }) => {
   }
 };
 
-const defaultFileBuildProcessing = ({ fileSrc, destinationFileSrc }) => {
+const defaultFileBuildProcessing = ({
+  fileSrc,
+  destinationFileSrc,
+  modifyData = (data) => data,
+}) => {
   // Только если файла еще нет в месте назначения
   if (!fs.pathExistsSync(destinationFileSrc) && fs.pathExistsSync(fileSrc)) {
-    const data = fs.readFileSync(fileSrc, 'utf8');
+    let data = fs.readFileSync(fileSrc, 'utf8');
 
-    // TODO тут можно обработать содержимое
+    data = modifyData(data, fileSrc);
 
     fs.ensureFileSync(destinationFileSrc);
     fs.writeFileSync(destinationFileSrc, data);
