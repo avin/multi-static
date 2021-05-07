@@ -1,0 +1,23 @@
+{
+  "name": "multi-static",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "a.vinogradov",
+  "license": "MIT",
+  "scripts": {
+    "dev": "node ./scripts/dev.js",
+    "build": "node ./scripts/build.js",
+    "dev:folder1": "node ./scripts/dev.js --config ./configs/folder1.config.js",
+    "build:folder1": "node ./scripts/start.js --config ./configs/folder1.config.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "fs-extra": "^10.0.0",
+    "lodash": "^4.17.21",
+    "mime-types": "^2.1.30",
+    "yargs": "^17.0.1"
+  },
+  "devDependencies": {
+    "localhost-certs": "1.0.0"
+  }
+}
