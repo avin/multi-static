@@ -3,7 +3,7 @@ const _ = require('lodash');
 const sass = require('node-sass');
 const postcss = require('postcss');
 const autoprefixer = require('autoprefixer');
-const { defaultFileDevProcessing } = require('../scripts/common');
+const { defaultFileDevProcessing, defaultFileBuildProcessing } = require('../scripts/common');
 
 module.exports = {
   http: {
@@ -33,12 +33,33 @@ module.exports = {
       }
     }
 
-    console.log('++++++', fileSrc);
-
     return defaultFileDevProcessing(params);
   },
-  // fileBuildProcessing: () => {
-  //
-  // },
+  fileBuildProcessing: (params) => {
+    const { fileSrc, destinationFileSrc } = params;
+
+    // Если это css - пробуем найти scss и отдать его скомпиленное содержимое
+    if (fileSrc.endsWith('.scss')) {
+      console.log('++', fileSrc);
+      const scssFileSrc = fileSrc;
+      const cssDestinationFileSrc = destinationFileSrc.replace(
+        new RegExp(`${_.escapeRegExp('.scss')}$`),
+        '.css'
+      );
+
+      if (!fs.pathExistsSync(cssDestinationFileSrc) && fs.pathExistsSync(scssFileSrc)) {
+        const sassResult = sass.renderSync({
+          file: scssFileSrc,
+        });
+        const postCssResult = postcss([autoprefixer({})]).process(sassResult.css);
+
+        fs.ensureFileSync(cssDestinationFileSrc);
+        fs.writeFileSync(cssDestinationFileSrc, postCssResult.toString());
+        return;
+      }
+    }
+
+    return defaultFileBuildProcessing(params);
+  },
   welcomeMessage: 'hello from folder1.config',
 };

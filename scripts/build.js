@@ -17,19 +17,12 @@ for (const [staticPath, serveLocation] of config.mapping) {
 
   const files = getFilesList(staticFilesPath);
 
-  for (const file of files) {
-    const destinationFile = file.replace(
+  for (const fileSrc of files) {
+    const destinationFileSrc = fileSrc.replace(
       new RegExp(`^${_.escapeRegExp(staticFilesPath)}`),
       buildPath
     );
 
-    // Только если файла еще нет в месте назначения
-    if (!fs.pathExistsSync(destinationFile)) {
-      const data = fs.readFileSync(file, 'utf8');
-
-      // TODO тут обработать содержимое
-
-      fs.writeFileSync(destinationFile, data);
-    }
+    config.fileBuildProcessing({ fileSrc, destinationFileSrc });
   }
 }
