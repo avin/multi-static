@@ -19,6 +19,8 @@ const processScssFile = (scssFile) => {
   return postCssResult.toString();
 };
 
+const _webpackMiddlewaresCache = {};
+
 module.exports = {
   http: {
     port: 3003,
@@ -45,22 +47,29 @@ module.exports = {
       if (fs.pathExistsSync(fileSrc)) {
         const firstLine = await readFirstLine(fileSrc);
         if (firstLine === '// @process') {
-          const dstArr = req.path.split('/');
-          const dstFileName = dstArr.slice(-1)[0];
-          const dstPath = dstArr.slice(0, -1).join('/');
+          let cachedWebpackMiddleware = _webpackMiddlewaresCache[fileSrc];
 
-          const config = generateWebpackConfig({
-            mode: 'development',
-            src: fileSrc,
+          if (!cachedWebpackMiddleware) {
+            const dstArr = req.path.split('/');
+            const dstFileName = dstArr.slice(-1)[0];
+            const dstPath = dstArr.slice(0, -1).join('/');
 
-            filename: dstFileName,
-            publicPath: dstPath,
-          });
+            const config = generateWebpackConfig({
+              mode: 'development',
+              src: fileSrc,
 
-          return webpackDevMiddleware(webpack(config), {
-            publicPath: config.output.publicPath,
-            stats: 'errors-only',
-          })(req, res, next);
+              filename: dstFileName,
+              publicPath: dstPath,
+            });
+
+            cachedWebpackMiddleware = webpackDevMiddleware(webpack(config), {
+              publicPath: config.output.publicPath,
+              stats: 'errors-only',
+            });
+            _webpackMiddlewaresCache[fileSrc] = cachedWebpackMiddleware;
+          }
+
+          return cachedWebpackMiddleware(req, res, next);
         }
       }
     }
