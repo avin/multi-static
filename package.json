@@ -19,8 +19,18 @@
   },
   "devDependencies": {
     "autoprefixer": "9.7.6",
+    "babel-loader": "^8.2.2",
     "localhost-certs": "1.0.0",
     "node-sass": "4.12.0",
-    "postcss": "7.0.27"
+    "postcss": "7.0.27",
+    "webpack": "4.41.5",
+    "@babel/core": "7.8.4",
+    "@babel/plugin-proposal-class-properties": "7.8.3",
+    "@babel/plugin-transform-runtime": "7.8.3",
+    "@babel/polyfill": "7.8.3",
+    "@babel/preset-env": "7.9.0",
+    "@babel/runtime": "7.8.4",
+    "terser-webpack-plugin": "2.3.4",
+    "webpack-dev-middleware": "3.7.2"
   }
 }

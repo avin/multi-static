@@ -20,7 +20,7 @@ app.use((_req, res, next) => {
   next();
 });
 
-app.use(function (req, res, next) {
+app.use(async function (req, res, next) {
   for (const [staticPath, serveLocation] of config.mapping) {
     // Если роут попадает под запись маппинга
     if (req.path.startsWith(serveLocation)) {
@@ -32,7 +32,7 @@ app.use(function (req, res, next) {
       // Составляем имя файла
       const fileSrc = path.join(process.cwd(), staticPath, cleanServeLocation);
 
-      const success = config.fileDevProcessing({ fileSrc, res, next });
+      const success = await config.fileDevProcessing({ fileSrc, req, res, next });
       if (success) {
         return;
       }
