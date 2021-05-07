@@ -1,17 +1,16 @@
 const TerserPlugin = require('terser-webpack-plugin');
 const path = require('path');
 
-function generateWebpackConfig({ src = '', filename, path, publicPath, mode = 'development' } = {}) {
-
+function generateWebpackConfig({
+  src = '',
+  filename,
+  path,
+  publicPath,
+  mode = 'development',
+  useProductionSourceMap = false,
+} = {}) {
   const isEnvDevelopment = mode === 'development';
   const isEnvProduction = mode === 'production';
-
-  const useProductionSourceMap = false;
-
-  // const dstArr = dst.split('/');
-  //
-  // let dstFileName = dstArr.slice(-1)[0];
-  // const dstPath = dstArr.slice(0, -1).join('/');
 
   const config = {
     mode,
