@@ -7,6 +7,4 @@ module.exports = {
     ['./static/folder1', '/root'],
     ['./static/_common', '/root'],
   ],
-
-  welcomeMessage: 'hello from folder1.config',
 };

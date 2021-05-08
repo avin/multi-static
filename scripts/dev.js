@@ -21,7 +21,9 @@ app.use((_req, res, next) => {
 });
 
 app.use(async function (req, res, next) {
-  for (const [staticPath, serveLocation] of config.mapping) {
+  for (let [staticPath, serveLocation] of config.mapping) {
+    serveLocation = config.mappingDevServeLocationRewrite(serveLocation);
+
     // Если роут попадает под запись маппинга
     if (req.path.startsWith(serveLocation)) {
       const cleanServeLocation = req.path.replace(

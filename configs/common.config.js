@@ -130,5 +130,4 @@ module.exports = {
 
     return defaultFileBuildProcessing(params);
   },
-  welcomeMessage: 'hello from common.config',
 };

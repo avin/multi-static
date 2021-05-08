@@ -11,6 +11,4 @@ module.exports = {
   internalParams: {
     foo: 'azz11'
   },
-
-  welcomeMessage: 'hello from folder2.config',
 };
