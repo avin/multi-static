@@ -30,6 +30,33 @@ const processScssFile = (scssFile) => {
 
 const _webpackMiddlewaresCache = {};
 
+const mustacheProcessFile = (fileSrc, variables = {}) => {
+  let data = fs.readFileSync(fileSrc, 'utf8');
+
+  return Mustache.render(data, {
+    eval: () => {
+      return (text, render) => {
+        return render(String(safeEval(text)));
+      };
+    },
+    chunk: () => {
+      return (text, render) => {
+        const chunkLocation = fileSrc.split(path.sep).slice(0, -1).join(path.sep);
+        const chunkFile = path.join(chunkLocation, text);
+        let chunkContent;
+        try {
+          chunkContent = mustacheProcessFile(chunkFile, 'utf8');
+        } catch (e) {
+          console.warn(`(!) Chunk read error. ${chunkFile}`);
+        }
+
+        return chunkContent || '';
+      };
+    },
+    ...variables,
+  });
+};
+
 module.exports = {
   http: {
     port: 3003,
@@ -83,16 +110,7 @@ module.exports = {
 
     // If html files - do the processing of calculated lines in files
     if (fileSrc.endsWith('.html') && fs.pathExistsSync(fileSrc)) {
-      let data = fs.readFileSync(fileSrc, 'utf8');
-
-      data = Mustache.render(data, {
-        eval: () => {
-          return (text, render) => {
-            return render(String(safeEval(text)));
-          };
-        },
-        ..._.get(this, ['options', 'pageVariables'], {}),
-      });
+      const data = mustacheProcessFile(fileSrc, _.get(this, ['options', 'pageVariables'], {}));
 
       res.setHeader('Content-Type', 'text/html');
       return res.send(data);
@@ -154,16 +172,7 @@ module.exports = {
 
     // If ".html" files - we do the processing of calculated lines in files
     if (fileSrc.endsWith('.html') && !fs.pathExistsSync(destinationFileSrc)) {
-      let data = fs.readFileSync(fileSrc, 'utf8');
-
-      data = Mustache.render(data, {
-        eval: () => {
-          return (text, render) => {
-            return render(String(safeEval(text)));
-          };
-        },
-        ..._.get(this, ['options', 'pageVariables'], {}),
-      });
+      const data = mustacheProcessFile(fileSrc, _.get(this, ['options', 'pageVariables'], {}));
 
       fs.ensureFileSync(destinationFileSrc);
       fs.writeFileSync(destinationFileSrc, data);

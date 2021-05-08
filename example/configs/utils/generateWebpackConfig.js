@@ -19,7 +19,7 @@ function generateWebpackConfig({
     },
     devtool: (() => {
       if (isEnvDevelopment) {
-        return 'cheap-module-source-map';
+        return 'eval';
       } else if (isEnvProduction) {
         return useProductionSourceMap ? 'source-map' : false;
       }
