@@ -12,7 +12,7 @@ const {
   defaultFileBuildProcessing,
   getFilesList,
 } = require('multi-static/common');
-const { readFirstLine } = require('read-first-line');
+const readFirstLine = require('read-first-line');
 const generateWebpackConfig = require('./utils/generateWebpackConfig');
 const processFileTag = require('./utils/processFileTag');
 const webpackDevMiddleware = require('webpack-dev-middleware');

@@ -4191,10 +4191,10 @@ raw-body@2.4.0:
     iconv-lite "0.4.24"
     unpipe "1.0.0"
 
-read-first-line@1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/read-first-line/-/read-first-line-1.0.2.tgz#d0d620ae399af1378e61d4d5514b77f207804a6e"
-  integrity sha512-sU3o45HcEpXY1ssuScT8DLzY4YlXiWXImADta9AlzBuwIJWzImkITcpgqUI/7E5hEretQgQwdZx67l52P6mWmg==
+read-first-line@1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/read-first-line/-/read-first-line-1.0.3.tgz#ac9dd4683d8fedeb36fa62618c71df91efc6f9d8"
+  integrity sha512-aInJsF0HDpweGNGFI/EZPars1sntFxRbF8UhwxNySwZTW49tmpY2byS7UA6CEO5yggOv8bfbt/RvwggCXKLKlQ==
 
 read-pkg-up@^1.0.1:
   version "1.0.1"
