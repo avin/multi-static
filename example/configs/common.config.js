@@ -17,22 +17,7 @@ const generateWebpackConfig = require('./utils/generateWebpackConfig');
 const processFileTag = require('./utils/processFileTag');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const mustacheProcessFile = require('./utils/mustacheProcessFile');
-
-const processScssFile = (scssFile) => {
-  try {
-    const sassResult = sass.renderSync({
-      file: scssFile,
-    });
-    const postCssResult = postcss([autoprefixer({})]).process(sassResult.css);
-
-    return postCssResult.toString();
-  } catch (e) {
-    console.warn(`process ${scssFile} error`);
-    console.warn(e);
-  }
-
-  return '';
-};
+const processScssFile = require('./utils/processScssFile')
 
 const _webpackMiddlewaresCache = {};
 

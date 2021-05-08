@@ -22,7 +22,7 @@
     "localhost-certs": "1.0.0",
     "mocker-api": "1.11.2",
     "multi-static": "link:..",
-    "mustache": "^4.2.0",
+    "mustache": "4.2.0",
     "node-sass": "4.12.0",
     "postcss": "7.0.27",
     "terser-webpack-plugin": "2.3.4",

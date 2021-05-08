@@ -8,7 +8,7 @@ const defaultFileDevProcessing = ({ fileSrc, res, modifyData = (data) => data })
   let data;
   try {
     if (fs.pathExistsSync(fileSrc)) {
-      data = fs.readFileSync(fileSrc, 'utf8');
+      data = fs.readFileSync(fileSrc);
     }
   } catch (e) {
     console.log('read error');
@@ -34,7 +34,7 @@ const defaultFileBuildProcessing = ({
 }) => {
   // Only if the file is not yet at the destination
   if (!fs.pathExistsSync(destinationFileSrc) && fs.pathExistsSync(fileSrc)) {
-    let data = fs.readFileSync(fileSrc, 'utf8');
+    let data = fs.readFileSync(fileSrc);
 
     data = modifyData(data, fileSrc);
 
