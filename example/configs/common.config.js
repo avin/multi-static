@@ -19,12 +19,19 @@ const webpackDevMiddleware = require('webpack-dev-middleware');
 const mustacheProcessFile = require('./utils/mustacheProcessFile');
 
 const processScssFile = (scssFile) => {
-  const sassResult = sass.renderSync({
-    file: scssFile,
-  });
-  const postCssResult = postcss([autoprefixer({})]).process(sassResult.css);
+  try {
+    const sassResult = sass.renderSync({
+      file: scssFile,
+    });
+    const postCssResult = postcss([autoprefixer({})]).process(sassResult.css);
 
-  return postCssResult.toString();
+    return postCssResult.toString();
+  } catch (e) {
+    console.warn(`process ${scssFile} error`);
+    console.warn(e);
+  }
+
+  return '';
 };
 
 const _webpackMiddlewaresCache = {};
@@ -39,18 +46,25 @@ module.exports = {
   async fileDevProcessing(params) {
     const { fileSrc, req, res, next } = params;
 
-    // If it is css, try to find scss and give its compiled content
+    // ------------
+    // *.SCSS -> CSS
+    // ------------
     if (fileSrc.endsWith('.css')) {
       const scssFile = fileSrc.replace(new RegExp(`${_.escapeRegExp('.css')}$`), '.scss');
       if (fs.pathExistsSync(scssFile)) {
-        const cssContent = processScssFile(scssFile);
-        res.setHeader('Content-Type', 'text/css');
+        const firstLine = await readFirstLine(scssFile);
+        if (firstLine === '// @process') {
+          const cssContent = processScssFile(scssFile);
+          res.setHeader('Content-Type', 'text/css');
 
-        return res.send(cssContent.toString());
+          return res.send(cssContent.toString());
+        }
       }
     }
 
-    // If the js file with the first line "// @process" - run through webpack
+    // ------------
+    // *.JS Webpack
+    // ------------
     if (fileSrc.endsWith('.js') && fs.pathExistsSync(fileSrc)) {
       const firstLine = await readFirstLine(fileSrc);
       if (firstLine === '// @process') {
@@ -80,7 +94,9 @@ module.exports = {
       }
     }
 
-    // If html files - do the processing of calculated lines in files
+    // ------------
+    // *.HTML Mustache
+    // ------------
     if (fileSrc.endsWith('.html') && fs.pathExistsSync(fileSrc)) {
       const data = mustacheProcessFile(fileSrc, _.get(this, ['options', 'pageVariables'], {}));
 
@@ -93,7 +109,9 @@ module.exports = {
   async fileBuildProcessing(params) {
     const { fileSrc, destinationFileSrc } = params;
 
-    // If it is ".scss" - the css file with transpiled content of the original scss will get into the build
+    // ------------
+    // *.SCSS -> CSS
+    // ------------
     if (fileSrc.endsWith('.scss')) {
       const scssFileSrc = fileSrc;
       const cssDestinationFileSrc = destinationFileSrc.replace(
@@ -102,15 +120,20 @@ module.exports = {
       );
 
       if (!fs.pathExistsSync(cssDestinationFileSrc) && fs.pathExistsSync(scssFileSrc)) {
-        const cssContent = processScssFile(scssFileSrc);
+        const firstLine = await readFirstLine(scssFileSrc);
+        if (firstLine === '// @process') {
+          const cssContent = processScssFile(scssFileSrc);
 
-        fs.ensureFileSync(cssDestinationFileSrc);
-        fs.writeFileSync(cssDestinationFileSrc, cssContent);
-        return;
+          fs.ensureFileSync(cssDestinationFileSrc);
+          fs.writeFileSync(cssDestinationFileSrc, cssContent);
+          return;
+        }
       }
     }
 
-    // If the ".js" file with the first line "// @process" - run through webpack
+    // ------------
+    // *.JS Webpack
+    // ------------
     if (fileSrc.endsWith('.js')) {
       if (!fs.pathExistsSync(destinationFileSrc)) {
         const firstLine = await readFirstLine(fileSrc);
@@ -142,7 +165,9 @@ module.exports = {
       }
     }
 
-    // If ".html" files - we do the processing of calculated lines in files
+    // ------------
+    // *.HTML Mustache
+    // ------------
     if (fileSrc.endsWith('.html') && !fs.pathExistsSync(destinationFileSrc)) {
       const data = mustacheProcessFile(fileSrc, _.get(this, ['options', 'pageVariables'], {}));
 
@@ -155,11 +180,11 @@ module.exports = {
   },
 
   beforeBuild() {
-    console.log('+++++++ beforeBuild');
+    console.log('> beforeBuild task running...');
   },
 
   afterBuild() {
-    console.log('+++++++ afterBuild');
+    console.log('> afterBuild task running...');
 
     const htmlFiles = getFilesList('./build').filter((i) => i.endsWith('.html'));
 

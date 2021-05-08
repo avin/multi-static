@@ -15,7 +15,9 @@ const { readConfig, getFilesList } = require('./common');
   await config.beforeBuild();
 
   // Copy files according to the list from config.mapping
-  for (const [staticPath, serveLocation] of config.mapping) {
+  for (let [staticPath, serveLocation] of config.mapping) {
+    serveLocation = config.mappingBuildLocationRewrite(serveLocation);
+
     const buildPath = path.join(config.buildPath, serveLocation);
 
     const staticFilesPath = path.join(process.cwd(), staticPath);

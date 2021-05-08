@@ -26,7 +26,7 @@ app.use((_req, res, next) => {
 
 app.use(async function (req, res, next) {
   for (let [staticPath, serveLocation] of config.mapping) {
-    serveLocation = config.mappingDevServeLocationRewrite(serveLocation);
+    serveLocation = config.mappingDevLocationRewrite(serveLocation);
 
     // If the route falls under the mapping record
     if (req.path.startsWith(serveLocation)) {

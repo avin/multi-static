@@ -55,9 +55,13 @@ File handling in dev mode.
 
 File handling in build mode.
 
-### • mappingDevServeLocationRewrite
+### • mappingDevLocationRewrite
 
-The function of substituting the destination string from mapping.
+The function of substituting the destination string from mapping for dev-mode.
+
+### • mappingBuildLocationRewrite
+
+The function of substituting the destination string from mapping for build-mode.
 
 ### • beforeBuild
 
