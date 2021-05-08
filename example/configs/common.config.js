@@ -12,12 +12,12 @@ const {
   defaultFileBuildProcessing,
   getFilesList,
 } = require('multi-static/common');
-const readFirstLine = require('./utils/readFirstLine');
+const { readFirstLine } = require('read-first-line');
 const generateWebpackConfig = require('./utils/generateWebpackConfig');
 const processFileTag = require('./utils/processFileTag');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const mustacheProcessFile = require('./utils/mustacheProcessFile');
-const processScssFile = require('./utils/processScssFile')
+const processScssFile = require('./utils/processScssFile');
 
 const _webpackMiddlewaresCache = {};
 

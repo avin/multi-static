@@ -3556,7 +3556,7 @@ ms@2.1.2:
   version "0.0.0"
   uid ""
 
-mustache@^4.2.0:
+mustache@4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/mustache/-/mustache-4.2.0.tgz#e5892324d60a12ec9c2a73359edca52972bf6f64"
   integrity sha512-71ippSywq5Yb7/tVYyGbkBggbU8H3u5Rz56fH60jGFgr8uHwxs+aSKeqmluIVzM0m0kB7xQjKS6qPfd0b2ZoqQ==
@@ -4190,6 +4190,11 @@ raw-body@2.4.0:
     http-errors "1.7.2"
     iconv-lite "0.4.24"
     unpipe "1.0.0"
+
+read-first-line@1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/read-first-line/-/read-first-line-1.0.2.tgz#d0d620ae399af1378e61d4d5514b77f207804a6e"
+  integrity sha512-sU3o45HcEpXY1ssuScT8DLzY4YlXiWXImADta9AlzBuwIJWzImkITcpgqUI/7E5hEretQgQwdZx67l52P6mWmg==
 
 read-pkg-up@^1.0.1:
   version "1.0.1"
