@@ -61,7 +61,7 @@ const defaultConfig = {
   beforeDevStart: () => {},
 };
 
-// Прочитать пользователский конфиг
+// Прочитать пользовательский конфиг
 const readConfig = (userConfigSrc) => {
   const config = _.cloneDeep(defaultConfig);
 

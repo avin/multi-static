@@ -16,6 +16,8 @@ const readFirstLine = require('./utils/readFirstLine');
 const generateWebpackConfig = require('./utils/generateWebpackConfig');
 const processFileTag = require('./utils/processFileTag');
 const webpackDevMiddleware = require('webpack-dev-middleware');
+const safeEval = require('./utils/safeEval');
+const Mustache = require('mustache');
 
 const processScssFile = (scssFile) => {
   const sassResult = sass.renderSync({
@@ -50,35 +52,50 @@ module.exports = {
     }
 
     // Если js файл с первой строчкой "// @process" - прогоняем через webpack
-    if (fileSrc.endsWith('.js')) {
-      if (fs.pathExistsSync(fileSrc)) {
-        const firstLine = await readFirstLine(fileSrc);
-        if (firstLine === '// @process') {
-          let cachedWebpackMiddleware = _webpackMiddlewaresCache[fileSrc];
+    if (fileSrc.endsWith('.js') && fs.pathExistsSync(fileSrc)) {
+      const firstLine = await readFirstLine(fileSrc);
+      if (firstLine === '// @process') {
+        let cachedWebpackMiddleware = _webpackMiddlewaresCache[fileSrc];
 
-          if (!cachedWebpackMiddleware) {
-            const dstArr = req.path.split('/');
-            const dstFileName = dstArr.slice(-1)[0];
-            const dstPath = dstArr.slice(0, -1).join('/');
+        if (!cachedWebpackMiddleware) {
+          const dstArr = req.path.split('/');
+          const dstFileName = dstArr.slice(-1)[0];
+          const dstPath = dstArr.slice(0, -1).join('/');
 
-            const config = generateWebpackConfig({
-              mode: 'development',
-              src: fileSrc,
+          const config = generateWebpackConfig({
+            mode: 'development',
+            src: fileSrc,
 
-              filename: dstFileName,
-              publicPath: dstPath,
-            });
+            filename: dstFileName,
+            publicPath: dstPath,
+          });
 
-            cachedWebpackMiddleware = webpackDevMiddleware(webpack(config), {
-              publicPath: config.output.publicPath,
-              stats: 'errors-only',
-            });
-            _webpackMiddlewaresCache[fileSrc] = cachedWebpackMiddleware;
-          }
-
-          return cachedWebpackMiddleware(req, res, next);
+          cachedWebpackMiddleware = webpackDevMiddleware(webpack(config), {
+            publicPath: config.output.publicPath,
+            stats: 'errors-only',
+          });
+          _webpackMiddlewaresCache[fileSrc] = cachedWebpackMiddleware;
         }
+
+        return cachedWebpackMiddleware(req, res, next);
       }
+    }
+
+    // Если html файлы - делаем обработку вычисляемых строк в файлах
+    if (fileSrc.endsWith('.html') && fs.pathExistsSync(fileSrc)) {
+      let data = fs.readFileSync(fileSrc, 'utf8');
+
+      data = Mustache.render(data, {
+        eval: () => {
+          return (text, render) => {
+            return render(String(safeEval(text)));
+          };
+        },
+        ..._.get(this, ['options', 'pageVariables'], {}),
+      });
+
+      res.setHeader('Content-Type', 'text/html');
+      return res.send(data);
     }
 
     return defaultFileDevProcessing(params);
@@ -135,6 +152,24 @@ module.exports = {
       }
     }
 
+    // Если html файлы - делаем обработку вычисляемых строк в файлах
+    if (fileSrc.endsWith('.html') && !fs.pathExistsSync(destinationFileSrc)) {
+      let data = fs.readFileSync(fileSrc, 'utf8');
+
+      data = Mustache.render(data, {
+        eval: () => {
+          return (text, render) => {
+            return render(String(safeEval(text)));
+          };
+        },
+        ..._.get(this, ['options', 'pageVariables'], {}),
+      });
+
+      fs.ensureFileSync(destinationFileSrc);
+      fs.writeFileSync(destinationFileSrc, data);
+      return;
+    }
+
     return defaultFileBuildProcessing(params);
   },
 
@@ -180,7 +215,7 @@ module.exports = {
     }
   },
 
-  beforeDevStart(app){
+  beforeDevStart(app) {
     mockerApi(app, path.resolve(__dirname, './mockerApi/index.js'));
-  }
+  },
 };
