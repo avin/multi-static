@@ -56,8 +56,9 @@ const defaultConfig = {
   fileDevProcessing: defaultFileDevProcessing,
   fileBuildProcessing: defaultFileBuildProcessing,
   mappingDevServeLocationRewrite: (dst) => dst,
-  preBuild: () => {},
-  postBuild: () => {},
+  beforeBuild: () => {},
+  afterBuild: () => {},
+  beforeDevStart: () => {},
 };
 
 // Прочитать пользователский конфиг

@@ -12,7 +12,7 @@ const { readConfig, getFilesList } = require('./common');
 
   fs.removeSync(config.buildPath);
 
-  await config.preBuild();
+  await config.beforeBuild();
 
   // Будем копировать файлы по списку из config.mapping
   for (const [staticPath, serveLocation] of config.mapping) {
@@ -32,5 +32,5 @@ const { readConfig, getFilesList } = require('./common');
     }
   }
 
-  await config.postBuild();
+  await config.afterBuild();
 })();

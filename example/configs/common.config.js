@@ -3,6 +3,7 @@ const path = require('path');
 const _ = require('lodash');
 const sass = require('node-sass');
 const postcss = require('postcss');
+const mockerApi = require('mocker-api');
 const webpack = require('webpack');
 const cheerio = require('cheerio');
 const autoprefixer = require('autoprefixer');
@@ -137,12 +138,12 @@ module.exports = {
     return defaultFileBuildProcessing(params);
   },
 
-  preBuild() {
-    console.log('+++++++ preBuild');
+  beforeBuild() {
+    console.log('+++++++ beforeBuild');
   },
 
-  postBuild() {
-    console.log('+++++++ postBuild');
+  afterBuild() {
+    console.log('+++++++ afterBuild');
 
     const htmlFiles = getFilesList('./build').filter((i) => i.endsWith('.html'));
 
@@ -178,4 +179,8 @@ module.exports = {
       fs.writeFileSync(htmlFile, content);
     }
   },
+
+  beforeDevStart(app){
+    mockerApi(app, path.resolve(__dirname, './mockerApi/index.js'));
+  }
 };

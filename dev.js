@@ -12,6 +12,8 @@ const config = readConfig(argv.config);
 
 const app = express();
 
+config.beforeDevStart(app);
+
 // Ставим хедеры на отключение кеша
 app.use((_req, res, next) => {
   res.setHeader('Surrogate-Control', 'no-store');
