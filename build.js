@@ -7,14 +7,14 @@ const fs = require('fs-extra');
 const { readConfig, getFilesList } = require('./common');
 
 (async () => {
-  // Грузим конфигурацию пользователя
+  // Loading user configuration
   const config = readConfig(argv.config);
 
   fs.removeSync(config.buildPath);
 
   await config.beforeBuild();
 
-  // Будем копировать файлы по списку из config.mapping
+  // Copy files according to the list from config.mapping
   for (const [staticPath, serveLocation] of config.mapping) {
     const buildPath = path.join(config.buildPath, serveLocation);
 

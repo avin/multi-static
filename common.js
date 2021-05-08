@@ -4,7 +4,7 @@ const _ = require('lodash');
 const mime = require('mime-types');
 
 const defaultFileDevProcessing = ({ fileSrc, res, modifyData = (data) => data }) => {
-  // Читаем содержимое файла
+  // Reading the contents of the file
   let data;
   try {
     if (fs.pathExistsSync(fileSrc)) {
@@ -14,7 +14,7 @@ const defaultFileDevProcessing = ({ fileSrc, res, modifyData = (data) => data })
     console.log('read error');
   }
 
-  // Если что-то прочиталось - отдаем содержимое
+  // If something is read, we return the content
   if (data !== undefined) {
     data = modifyData(data, fileSrc);
 
@@ -32,7 +32,7 @@ const defaultFileBuildProcessing = ({
   destinationFileSrc,
   modifyData = (data) => data,
 }) => {
-  // Только если файла еще нет в месте назначения
+  // Only if the file is not yet at the destination
   if (!fs.pathExistsSync(destinationFileSrc) && fs.pathExistsSync(fileSrc)) {
     let data = fs.readFileSync(fileSrc, 'utf8');
 
@@ -43,7 +43,7 @@ const defaultFileBuildProcessing = ({
   }
 };
 
-// Дефолтный конфиг
+// Default config
 const defaultConfig = {
   http: {
     port: 3000,
@@ -61,7 +61,7 @@ const defaultConfig = {
   beforeDevStart: () => {},
 };
 
-// Прочитать пользовательский конфиг
+// Read user config
 const readConfig = (userConfigSrc) => {
   const config = _.cloneDeep(defaultConfig);
 
@@ -77,7 +77,7 @@ const readConfig = (userConfigSrc) => {
   return config;
 };
 
-// Получить все файлы в папке
+// Get all files in a folder
 const getFilesList = (dir, pathList = []) => {
   fs.readdirSync(dir).forEach((file) => {
     const absolute = path.join(dir, file);

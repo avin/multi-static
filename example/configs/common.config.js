@@ -40,7 +40,7 @@ module.exports = {
   async fileDevProcessing(params) {
     const { fileSrc, req, res, next } = params;
 
-    // Если это css - пробуем найти scss и отдать его скомпиленное содержимое
+    // If it is css, try to find scss and give its compiled content
     if (fileSrc.endsWith('.css')) {
       const scssFile = fileSrc.replace(new RegExp(`${_.escapeRegExp('.css')}$`), '.scss');
       if (fs.pathExistsSync(scssFile)) {
@@ -51,7 +51,7 @@ module.exports = {
       }
     }
 
-    // Если js файл с первой строчкой "// @process" - прогоняем через webpack
+    // If the js file with the first line "// @process" - run through webpack
     if (fileSrc.endsWith('.js') && fs.pathExistsSync(fileSrc)) {
       const firstLine = await readFirstLine(fileSrc);
       if (firstLine === '// @process') {
@@ -81,7 +81,7 @@ module.exports = {
       }
     }
 
-    // Если html файлы - делаем обработку вычисляемых строк в файлах
+    // If html files - do the processing of calculated lines in files
     if (fileSrc.endsWith('.html') && fs.pathExistsSync(fileSrc)) {
       let data = fs.readFileSync(fileSrc, 'utf8');
 
@@ -103,7 +103,7 @@ module.exports = {
   async fileBuildProcessing(params) {
     const { fileSrc, destinationFileSrc } = params;
 
-    // Если это scss - в билд попадет css файл с транспилленным содержимым оригинальной scss
+    // If it is ".scss" - the css file with transpiled content of the original scss will get into the build
     if (fileSrc.endsWith('.scss')) {
       const scssFileSrc = fileSrc;
       const cssDestinationFileSrc = destinationFileSrc.replace(
@@ -120,7 +120,7 @@ module.exports = {
       }
     }
 
-    // Если js файл с первой строчкой "// @process" - прогоняем через webpack
+    // If the ".js" file with the first line "// @process" - run through webpack
     if (fileSrc.endsWith('.js')) {
       if (!fs.pathExistsSync(destinationFileSrc)) {
         const firstLine = await readFirstLine(fileSrc);
@@ -152,7 +152,7 @@ module.exports = {
       }
     }
 
-    // Если html файлы - делаем обработку вычисляемых строк в файлах
+    // If ".html" files - we do the processing of calculated lines in files
     if (fileSrc.endsWith('.html') && !fs.pathExistsSync(destinationFileSrc)) {
       let data = fs.readFileSync(fileSrc, 'utf8');
 
@@ -182,18 +182,16 @@ module.exports = {
 
     const htmlFiles = getFilesList('./build').filter((i) => i.endsWith('.html'));
 
-    // Обработать теги с ссылками на файлы
-    // и подставить к ссылкам приставки с хешами
+    // Process tags with links to files and substitute prefixes with hashes for links
     for (const htmlFile of htmlFiles) {
-      // Читаем его содержимое
       let content = fs.readFileSync(htmlFile, 'utf8');
 
-      // Парсим HTML-содержимое
+      // Parse HTML content
       const $ = cheerio.load(content, {
         decodeEntities: false,
       });
 
-      // Обрабатываем ссылки на скрипты
+      // Processing links to scripts
       content = processFileTag(content, {
         $,
         tagSelector: 'script',
@@ -202,7 +200,7 @@ module.exports = {
         withIntegrity: false,
       });
 
-      // Обрабатываем ссылки на стили
+      // Processing links to styles
       content = processFileTag(content, {
         $,
         tagSelector: 'link[rel="stylesheet"]',
@@ -210,7 +208,6 @@ module.exports = {
         htmlFile,
       });
 
-      // Пишем обновленный файл
       fs.writeFileSync(htmlFile, content);
     }
   },

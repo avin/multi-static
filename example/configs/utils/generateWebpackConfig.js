@@ -15,7 +15,6 @@ function generateWebpackConfig({
   const config = {
     mode,
     entry: {
-      // Путь входого файла
       app: src,
     },
     devtool: (() => {
@@ -32,7 +31,6 @@ function generateWebpackConfig({
       publicPath,
     },
     plugins: [],
-    // Не ругаться на размер выходного файла
     performance: false,
     module: {
       rules: [
@@ -41,7 +39,6 @@ function generateWebpackConfig({
           exclude: [/node_modules/],
           loader: require.resolve('babel-loader'),
           options: {
-            // Для более быстрых ребилдов
             cacheDirectory: true,
             cacheCompression: false,
             compact: isEnvProduction,
@@ -54,7 +51,6 @@ function generateWebpackConfig({
       minimize: isEnvProduction,
       usedExports: isEnvProduction,
       minimizer: [
-        // Сжималка JS - все настройки выставлены для нормальной совместимости со старыми браузерами
         new TerserPlugin({
           terserOptions: {
             parse: {
@@ -75,7 +71,6 @@ function generateWebpackConfig({
               ascii_only: true,
             },
           },
-          // Паралельность может валиться в некоторых системах (например wsl)
           parallel: false,
           cache: true,
           sourceMap: useProductionSourceMap,
@@ -84,7 +79,6 @@ function generateWebpackConfig({
       ],
     },
 
-    // Некоторых либы пытаются тянуть node-овские модули, не дадим им это сделать
     node: {
       module: 'empty',
       dgram: 'empty',

@@ -35,7 +35,7 @@ const processFileTag = (content, { $, tagSelector, fileAttr, htmlFile, withInteg
   $(tagSelector).each(function () {
     const currentSrc = $(this).attr(fileAttr);
     if (currentSrc && !currentSrc.includes('://')) {
-      // Парсим ссылку на файл
+      // Parse a link to a file
       const currentSrcParts = currentSrc.split('?');
       const urlFile = currentSrcParts[0];
       const urlParams = currentSrcParts[1];
@@ -44,30 +44,30 @@ const processFileTag = (content, { $, tagSelector, fileAttr, htmlFile, withInteg
         urlParamsObj = decodeQueryParamsString(urlParams);
       }
 
-      // Получаем контрольную сумму файла
+      // Get the checksum of the file
       const filePath = path.resolve(htmlFile, '..', urlFile);
       if (!fs.pathExistsSync(filePath)) {
-        // Если такого файла нет - продолжаем дальше
+        // If there is no such file, continue on
         if (isVerbose) {
-          console.warn(`(!) Файл ${htmlFile} содержит несуществующую ссылку ${currentSrc}`);
+          console.warn(`(!) File ${htmlFile} contains a non-existent link ${currentSrc}`);
         }
         return;
       }
       const fileContent = fs.readFileSync(filePath, 'utf8');
       const fileCheckSum = generateChecksum(fileContent).substring(0, 10);
 
-      // Генерация integrity аттрибутов (только для JS)
+      // Generation of integrity attributes (JS only)
       let integrityAttributesStr = '';
       if (withIntegrity && filePath.endsWith('.js')) {
         const sha384CheckSum = generateChecksum(fileContent, 'sha384', 'base64');
-        integrityAttributesStr = ` integrity="sha384-${sha384CheckSum}" crossorigin="anonymous" onerror="alert('К сожалению, загрузка страницы невозможна (нарушение целостности ресурсов)')"`;
+        integrityAttributesStr = ` integrity="sha384-${sha384CheckSum}" crossorigin="anonymous" onerror="alert('Violation of the integrity of the resource')"`;
       }
 
-      // Генерим новую ссылку на файл
+      // Generating a new link to the file
       urlParamsObj['v'] = fileCheckSum;
       const resultSrc = `${urlFile}?${objectToQueryString(urlParamsObj)}`;
 
-      // Подставляем эту ссылку
+      // Substitute this link
       content = content.replace(`"${currentSrc}"`, `"${resultSrc}"${integrityAttributesStr}`);
     }
   });

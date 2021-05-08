@@ -1,76 +1,76 @@
 # Multi-static
 
-Инструмент для разработки веб-приложений со сложной иерархией статики и потребностью
-в гибкой модификации содержимого файлов (как в режиме разработки, так и при сборке).
+Tool for developing web applications with complex static hierarchy and need
+in flexible modification of the contents of files (both in development and build modes).
 
-## Использование
+## Using
 
-Запустить dev-сервер:
+Run dev-server:
 
 ```sh
 multi-static-dev --config ./config.js
 ```
 
-Запустить сборку:
+Run build:
 
 ```sh
 multi-static-build --config ./config.js
 ```
 
-## Опции конфигурации
+## Configuration options
 
 ### • http
 
-Объект с настройками веб-сервера для dev-режима
+Object with web server settings for dev-mode.
 
 #### • http.port
 
-Порт веб-сервера
+Web server port.
 
 #### • http.https
 
-Использовать https протокол
+Use https protocol.
 
 #### • http.key
 
-Ключ сертификата (для https)
+Certificate key (for https).
 
 #### • http.cert
 
-Сертификат (для https)
+Certificate (for https).
 
 ### • buildPath
 
-Директория для готовой сборки
+Build directory.
 
 ### • mapping
 
-Маппинг для файлов
+Mapping for files.
 
 ### • fileDevProcessing
 
-Обработка файлов в dev-режиме
+File handling in dev mode.
 
 ### • fileBuildProcessing
 
-Обработка файлов в режиме сборки
+File handling in build mode.
 
 ### • mappingDevServeLocationRewrite
 
-Функция подмены строки назначения из mapping
+The function of substituting the destination string from mapping.
 
 ### • beforeBuild
 
-Функция выполняемая перед сборкой
+Pre-build function.
 
 ### • afterBuild
 
-Функция выполняемая после сборкой
+Post-build function.
 
 ### • beforeDevStart
 
-Функция перед запуском dev-сервера. Здесь можно настроить middleware-ы для Express сервера.
+Function before starting dev server. Here you can configure the middlewares for the Express server.
 
-## Примеры конфигурации
+## Configuration examples
 
-Комплексный пример использования можно найти в директории [./example](./example)
+A comprehensive usage example can be found in the [./example](./example) directory.

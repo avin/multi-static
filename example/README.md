@@ -1,7 +1,8 @@
-# Пример окружения для multi-static
+# Example environment for multi-static
 
-Текущие настройки содержат примеры
-* Использования scss файлов
-* Использования wepback с babel для js файлов
-* Шаблонизации html с помощью mustache
-* Использования mocker-api как middleware для dev-сервера
+The current settings contain examples:
+
+- Using scss files
+- Using wepback with babel for js files
+- HTML templating with mustache
+- Using mocker-api as middleware for dev-server

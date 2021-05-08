@@ -7,14 +7,14 @@ const _ = require('lodash');
 const express = require('express');
 const { readConfig } = require('./common');
 
-// Грузим конфигурацию пользователя
+// Loading user configuration
 const config = readConfig(argv.config);
 
 const app = express();
 
 config.beforeDevStart(app);
 
-// Ставим хедеры на отключение кеша
+// Put headers to disable the cache
 app.use((_req, res, next) => {
   res.setHeader('Surrogate-Control', 'no-store');
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -28,14 +28,14 @@ app.use(async function (req, res, next) {
   for (let [staticPath, serveLocation] of config.mapping) {
     serveLocation = config.mappingDevServeLocationRewrite(serveLocation);
 
-    // Если роут попадает под запись маппинга
+    // If the route falls under the mapping record
     if (req.path.startsWith(serveLocation)) {
       const cleanServeLocation = req.path.replace(
         new RegExp(`^${_.escapeRegExp(serveLocation)}`, ''),
         ''
       );
 
-      // Составляем имя файла
+      // Composing the file name
       const fileSrc = path.join(process.cwd(), staticPath, cleanServeLocation);
 
       const success = await config.fileDevProcessing({ fileSrc, req, res, next });
