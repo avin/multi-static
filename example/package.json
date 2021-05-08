@@ -1,0 +1,30 @@
+{
+  "name": "multi-static-example",
+  "version": "1.0.0",
+  "author": "Avin Lambrero",
+  "license": "MIT",
+  "scripts": {
+    "dev": "node ./node_modules/multi-static/dev.js",
+    "build": "node ./node_modules/multi-static/build.js",
+    "dev:folder1": "npm run dev -- --config ./configs/folder1.config.js",
+    "build:folder1": "npm run build -- --config ./configs/folder1.config.js"
+  },
+  "dependencies": {
+    "@babel/core": "7.8.4",
+    "@babel/plugin-proposal-class-properties": "7.8.3",
+    "@babel/plugin-transform-runtime": "7.8.3",
+    "@babel/polyfill": "7.8.3",
+    "@babel/preset-env": "7.9.0",
+    "@babel/runtime": "7.8.4",
+    "autoprefixer": "9.7.6",
+    "babel-loader": "^8.2.2",
+    "localhost-certs": "1.0.0",
+    "multi-static": "link:..",
+    "node-sass": "4.12.0",
+    "postcss": "7.0.27",
+    "terser-webpack-plugin": "2.3.4",
+    "webpack": "4.41.5",
+    "webpack-dev-middleware": "3.7.2",
+    "cheerio": "1.0.0-rc.3"
+  }
+}

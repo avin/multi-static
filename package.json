@@ -1,14 +1,15 @@
 {
   "name": "multi-static",
-  "version": "1.0.0",
-  "main": "index.js",
-  "author": "a.vinogradov",
+  "version": "0.1.0",
+  "author": "Avin Lambrero",
   "license": "MIT",
-  "scripts": {
-    "dev": "node ./scripts/dev.js",
-    "build": "node ./scripts/build.js",
-    "dev:folder1": "node ./scripts/dev.js --config ./configs/folder1.config.js",
-    "build:folder1": "node ./scripts/start.js --config ./configs/folder1.config.js"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/avin/multi-static.git"
+  },
+  "bin": {
+    "multi-static-dev": "dev.js",
+    "multi-static-build": "build.js"
   },
   "dependencies": {
     "express": "^4.17.1",
@@ -16,21 +17,5 @@
     "lodash": "^4.17.21",
     "mime-types": "^2.1.30",
     "yargs": "^17.0.1"
-  },
-  "devDependencies": {
-    "autoprefixer": "9.7.6",
-    "babel-loader": "^8.2.2",
-    "localhost-certs": "1.0.0",
-    "node-sass": "4.12.0",
-    "postcss": "7.0.27",
-    "webpack": "4.41.5",
-    "@babel/core": "7.8.4",
-    "@babel/plugin-proposal-class-properties": "7.8.3",
-    "@babel/plugin-transform-runtime": "7.8.3",
-    "@babel/polyfill": "7.8.3",
-    "@babel/preset-env": "7.9.0",
-    "@babel/runtime": "7.8.4",
-    "terser-webpack-plugin": "2.3.4",
-    "webpack-dev-middleware": "3.7.2"
   }
 }

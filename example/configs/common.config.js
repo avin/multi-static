@@ -4,10 +4,16 @@ const _ = require('lodash');
 const sass = require('node-sass');
 const postcss = require('postcss');
 const webpack = require('webpack');
+const cheerio = require('cheerio');
 const autoprefixer = require('autoprefixer');
-const { defaultFileDevProcessing, defaultFileBuildProcessing } = require('../scripts/common');
+const {
+  defaultFileDevProcessing,
+  defaultFileBuildProcessing,
+  getFilesList,
+} = require('multi-static/common');
 const readFirstLine = require('./utils/readFirstLine');
 const generateWebpackConfig = require('./utils/generateWebpackConfig');
+const processFileTag = require('./utils/processFileTag');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 
 const processScssFile = (scssFile) => {
@@ -129,5 +135,47 @@ module.exports = {
     }
 
     return defaultFileBuildProcessing(params);
+  },
+
+  preBuild() {
+    console.log('+++++++ preBuild');
+  },
+
+  postBuild() {
+    console.log('+++++++ postBuild');
+
+    const htmlFiles = getFilesList('./build').filter((i) => i.endsWith('.html'));
+
+    // Обработать теги с ссылками на файлы
+    // и подставить к ссылкам приставки с хешами
+    for (const htmlFile of htmlFiles) {
+      // Читаем его содержимое
+      let content = fs.readFileSync(htmlFile, 'utf8');
+
+      // Парсим HTML-содержимое
+      const $ = cheerio.load(content, {
+        decodeEntities: false,
+      });
+
+      // Обрабатываем ссылки на скрипты
+      content = processFileTag(content, {
+        $,
+        tagSelector: 'script',
+        fileAttr: 'src',
+        htmlFile,
+        withIntegrity: false,
+      });
+
+      // Обрабатываем ссылки на стили
+      content = processFileTag(content, {
+        $,
+        tagSelector: 'link[rel="stylesheet"]',
+        fileAttr: 'href',
+        htmlFile,
+      });
+
+      // Пишем обновленный файл
+      fs.writeFileSync(htmlFile, content);
+    }
   },
 };

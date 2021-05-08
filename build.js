@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const argv = require('yargs').argv;
 const path = require('path');
 const _ = require('lodash');
@@ -9,6 +11,8 @@ const { readConfig, getFilesList } = require('./common');
   const config = readConfig(argv.config);
 
   fs.removeSync(config.buildPath);
+
+  await config.preBuild();
 
   // Будем копировать файлы по списку из config.mapping
   for (const [staticPath, serveLocation] of config.mapping) {
@@ -27,4 +31,6 @@ const { readConfig, getFilesList } = require('./common');
       await config.fileBuildProcessing({ fileSrc, destinationFileSrc });
     }
   }
+
+  await config.postBuild();
 })();
