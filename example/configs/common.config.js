@@ -3,7 +3,6 @@ const path = require('path');
 const _ = require('lodash');
 const mockerApi = require('mocker-api');
 const webpack = require('webpack');
-const cheerio = require('cheerio');
 const {
   defaultFileDevProcessing,
   defaultFileBuildProcessing,
@@ -11,10 +10,10 @@ const {
 } = require('multi-static/common');
 const readFirstLine = require('read-first-line');
 const generateWebpackConfig = require('./utils/generateWebpackConfig');
-const processFileTag = require('./utils/processFileTag');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const mustacheProcessFile = require('./utils/mustacheProcessFile');
 const processScssFile = require('./utils/processScssFile');
+const staticHashVersion = require('static-hash-version');
 
 const _webpackMiddlewaresCache = {};
 
@@ -168,36 +167,15 @@ module.exports = {
   afterBuild() {
     console.log('> afterBuild task running...');
 
-    const htmlFiles = getFilesList('./build').filter((i) => i.endsWith('.html'));
-
     // Process tags with links to files and substitute prefixes with hashes for links
-    for (const htmlFile of htmlFiles) {
-      let content = fs.readFileSync(htmlFile, 'utf8');
-
-      // Parse HTML content
-      const $ = cheerio.load(content, {
-        decodeEntities: false,
+    getFilesList('./build')
+      .filter((i) => i.endsWith('.html'))
+      .forEach((htmlFile) => {
+        staticHashVersion({
+          htmlFilePath: htmlFile,
+          writeToFile: true,
+        });
       });
-
-      // Processing links to scripts
-      content = processFileTag(content, {
-        $,
-        tagSelector: 'script',
-        fileAttr: 'src',
-        htmlFile,
-        withIntegrity: false,
-      });
-
-      // Processing links to styles
-      content = processFileTag(content, {
-        $,
-        tagSelector: 'link[rel="stylesheet"]',
-        fileAttr: 'href',
-        htmlFile,
-      });
-
-      fs.writeFileSync(htmlFile, content);
-    }
   },
 
   beforeDevStart(app) {
