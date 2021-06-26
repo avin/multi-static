@@ -1,9 +1,17 @@
 const fs = require('fs-extra');
 const path = require('path');
+const _ = require('lodash');
 const safeEval = require('./safeEval');
 const Mustache = require('mustache');
 
-const mustacheProcessFile = (fileSrc, variables = {}) => {
+/**
+ * Пропустить файл через mustache
+ * @param fileSrc
+ * @param customOptions
+ * @param originalFileSrc - изначальный обрабатываемый файл (для случаев когда происходит обработка внутренних чанков)
+ * @returns {*}
+ */
+const mustacheProcessFile = (fileSrc, customOptions = {}, originalFileSrc) => {
   let data = fs.readFileSync(fileSrc, 'utf8');
 
   return Mustache.render(data, {
@@ -18,7 +26,7 @@ const mustacheProcessFile = (fileSrc, variables = {}) => {
         const chunkFile = path.join(chunkLocation, text);
         let chunkContent;
         try {
-          chunkContent = mustacheProcessFile(chunkFile, 'utf8');
+          chunkContent = mustacheProcessFile(chunkFile, customOptions, originalFileSrc || fileSrc);
         } catch (e) {
           console.warn(`(!) Chunk read error. ${chunkFile}`);
         }
@@ -26,7 +34,19 @@ const mustacheProcessFile = (fileSrc, variables = {}) => {
         return chunkContent || '';
       };
     },
-    ...variables,
+    translate: () => {
+      return (text, render) => {
+        const execResult = /_([a-z]+)\.html/.exec(originalFileSrc || fileSrc);
+        const lang = execResult && execResult[1];
+
+        if (lang) {
+          return _.get(customOptions, ['translations', ...text.split('.'), lang], text);
+        }
+
+        return text;
+      };
+    },
+    ...customOptions.variables,
   });
 };
 

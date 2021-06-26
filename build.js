@@ -9,7 +9,7 @@ const { readConfig, getFilesList, mixInCustomPageOptions } = require('./common')
 (async () => {
   // Loading user configuration
   const config = readConfig(argv.config);
-  const originalPageOptions = config.pageOptions;
+  const originalCustomOptions = config.customOptions;
 
   fs.removeSync(config.buildPath);
 
@@ -35,7 +35,7 @@ const { readConfig, getFilesList, mixInCustomPageOptions } = require('./common')
       mixInCustomPageOptions({
         reqPath,
         config,
-        originalPageOptions,
+        originalCustomOptions,
       });
 
       // ---------------------------

@@ -79,7 +79,7 @@ module.exports = {
     // *.HTML Mustache
     // ------------
     if (fileSrc.endsWith('.html') && fs.pathExistsSync(fileSrc)) {
-      const data = mustacheProcessFile(fileSrc, _.get(this, ['pageOptions', 'variables'], {}));
+      const data = mustacheProcessFile(fileSrc, this.customOptions);
 
       res.setHeader('Content-Type', 'text/html');
       return res.send(data);
@@ -150,7 +150,7 @@ module.exports = {
     // *.HTML Mustache
     // ------------
     if (fileSrc.endsWith('.html') && !fs.pathExistsSync(destinationFileSrc)) {
-      const data = mustacheProcessFile(fileSrc, _.get(this, ['pageOptions', 'variables'], {}));
+      const data = mustacheProcessFile(fileSrc, this.customOptions);
 
       fs.ensureFileSync(destinationFileSrc);
       fs.writeFileSync(destinationFileSrc, data);

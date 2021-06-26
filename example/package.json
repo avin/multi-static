@@ -7,7 +7,9 @@
     "dev": "node ./node_modules/multi-static/dev.js",
     "build": "node ./node_modules/multi-static/build.js",
     "dev:folder1": "npm run dev -- --config ./configs/folder1.config.js",
-    "build:folder1": "npm run build -- --config ./configs/folder1.config.js"
+    "dev:folder2": "npm run dev -- --config ./configs/folder2.config.js",
+    "build:folder1": "npm run build -- --config ./configs/folder1.config.js",
+    "build:folder2": "npm run build -- --config ./configs/folder2.config.js"
   },
   "dependencies": {
     "@babel/core": "7.8.4",

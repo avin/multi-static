@@ -3,7 +3,7 @@ const commonConfig = require('./common.config');
 module.exports = {
   ...commonConfig,
 
-  pageOptions: {
+  customOptions: {
     variables: {
       title: 'Folder1 page',
       var1: 'originalVar1',

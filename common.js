@@ -60,7 +60,7 @@ const defaultConfig = {
   beforeBuild: () => {},
   afterBuild: () => {},
   beforeDevStart: () => {},
-  pageOptions: {},
+  customOptions: {},
 };
 
 // Read user config
@@ -91,10 +91,15 @@ const getFilesList = (dir, pathList = []) => {
   return pathList;
 };
 
+function requireUncached(module) {
+  delete require.cache[require.resolve(module)];
+  return require(module);
+}
+
 // Mix content of _options.js files to pageOptions of current config
-const mixInCustomPageOptions = ({ reqPath, config, originalPageOptions }) => {
+const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions }) => {
   // Держим оригинальный конфиг в сохранности для последующих запросов
-  config.pageOptions = _.merge({}, originalPageOptions);
+  config.customOptions = _.merge({}, originalCustomOptions);
 
   const pathArr = reqPath.split('/').slice(0, -1);
   while (pathArr.length) {
@@ -115,8 +120,8 @@ const mixInCustomPageOptions = ({ reqPath, config, originalPageOptions }) => {
         const fileSrc = path.join(process.cwd(), staticPath, cleanServeLocation);
 
         try {
-          const newPageOptions = require(fileSrc);
-          _.merge(config.pageOptions, newPageOptions);
+          const newPageOptions = requireUncached(fileSrc);
+          config.customOptions = _.merge({}, newPageOptions, config.customOptions);
         } catch {}
       }
     }

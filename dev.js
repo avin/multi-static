@@ -10,7 +10,7 @@ const { readConfig, mixInCustomPageOptions } = require('./common');
 
 // Loading user configuration
 const config = readConfig(argv.config);
-const originalPageOptions = config.pageOptions;
+const originalCustomOptions = config.customOptions;
 
 const app = express();
 
@@ -30,7 +30,7 @@ app.use(async function (req, res, next) {
   mixInCustomPageOptions({
     reqPath: req.path,
     config,
-    originalPageOptions,
+    originalCustomOptions,
   });
 
   // ---------------------------
