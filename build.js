@@ -4,11 +4,12 @@ const argv = require('yargs').argv;
 const path = require('path');
 const _ = require('lodash');
 const fs = require('fs-extra');
-const { readConfig, getFilesList } = require('./common');
+const { readConfig, getFilesList, mixInCustomPageOptions } = require('./common');
 
 (async () => {
   // Loading user configuration
   const config = readConfig(argv.config);
+  const originalPageOptions = config.pageOptions;
 
   fs.removeSync(config.buildPath);
 
@@ -25,6 +26,20 @@ const { readConfig, getFilesList } = require('./common');
     const files = getFilesList(staticFilesPath);
 
     for (const fileSrc of files) {
+      const reqPath =
+        serveLocation +
+        fileSrc
+          .replace(new RegExp(`^${_.escapeRegExp(staticFilesPath)}`, ''), '')
+          .replace(new RegExp(_.escapeRegExp(path.sep), 'g'), '/');
+
+      mixInCustomPageOptions({
+        reqPath,
+        config,
+        originalPageOptions,
+      });
+
+      // ---------------------------
+
       const destinationFileSrc = fileSrc.replace(
         new RegExp(`^${_.escapeRegExp(staticFilesPath)}`),
         buildPath

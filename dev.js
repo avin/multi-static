@@ -4,11 +4,13 @@ const argv = require('yargs').argv;
 const path = require('path');
 const https = require('https');
 const _ = require('lodash');
+const fs = require('fs-extra');
 const express = require('express');
-const { readConfig } = require('./common');
+const { readConfig, mixInCustomPageOptions } = require('./common');
 
 // Loading user configuration
 const config = readConfig(argv.config);
+const originalPageOptions = config.pageOptions;
 
 const app = express();
 
@@ -25,6 +27,14 @@ app.use((_req, res, next) => {
 });
 
 app.use(async function (req, res, next) {
+  mixInCustomPageOptions({
+    reqPath: req.path,
+    config,
+    originalPageOptions,
+  });
+
+  // ---------------------------
+
   for (let [staticPath, serveLocation] of config.mapping) {
     serveLocation = config.mappingDevLocationRewrite(serveLocation);
 

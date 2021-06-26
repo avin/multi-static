@@ -60,6 +60,7 @@ const defaultConfig = {
   beforeBuild: () => {},
   afterBuild: () => {},
   beforeDevStart: () => {},
+  pageOptions: {},
 };
 
 // Read user config
@@ -90,10 +91,45 @@ const getFilesList = (dir, pathList = []) => {
   return pathList;
 };
 
+// Mix content of _options.js files to pageOptions of current config
+const mixInCustomPageOptions = ({ reqPath, config, originalPageOptions }) => {
+  // Держим оригинальный конфиг в сохранности для последующих запросов
+  config.pageOptions = _.merge({}, originalPageOptions);
+
+  const pathArr = reqPath.split('/').slice(0, -1);
+  while (pathArr.length) {
+    const optionsPath = pathArr.join('/') + '/' + '_options.js';
+
+    // Пытаемся прочитать конфиг
+    for (let [staticPath, serveLocation] of config.mapping) {
+      serveLocation = config.mappingDevLocationRewrite(serveLocation);
+
+      // If the route falls under the mapping record
+      if (optionsPath.startsWith(serveLocation)) {
+        const cleanServeLocation = optionsPath.replace(
+          new RegExp(`^${_.escapeRegExp(serveLocation)}`, ''),
+          ''
+        );
+
+        // Composing the file name
+        const fileSrc = path.join(process.cwd(), staticPath, cleanServeLocation);
+
+        try {
+          const newPageOptions = require(fileSrc);
+          _.merge(config.pageOptions, newPageOptions);
+        } catch {}
+      }
+    }
+
+    pathArr.pop();
+  }
+};
+
 module.exports = {
   defaultConfig,
   readConfig,
   getFilesList,
   defaultFileDevProcessing,
   defaultFileBuildProcessing,
+  mixInCustomPageOptions,
 };
