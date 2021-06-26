@@ -4,7 +4,7 @@ module.exports = {
   ...commonConfig,
 
   mapping: [
-    ['./static/folder2', '/root'],
+    ['./static/site2', '/root'],
     ['./static/_common', '/root'],
   ],
 
