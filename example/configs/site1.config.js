@@ -9,6 +9,7 @@ module.exports = {
       var1: 'originalVar1',
       var2: 'originalVar2',
       var3: 'originalVar3',
+      var4: 'originalVar4',
     },
   },
 

@@ -1,5 +1,6 @@
 module.exports = {
   variables: {
+    var1: 'VAR1 from site1/_options.js',
     var2: 'VAR2 from site1/_options.js',
   },
   translations: {
