@@ -98,8 +98,7 @@ function requireUncached(module) {
 
 // Mix content of _options.js files to pageOptions of current config
 const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions }) => {
-  // Держим оригинальный конфиг в сохранности для последующих запросов
-  config.customOptions = _.merge({}, originalCustomOptions);
+  config.customOptions = {};
 
   const pathArr = reqPath.split('/').slice(0, -1);
   while (pathArr.length) {
@@ -121,6 +120,7 @@ const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions }) => {
 
         try {
           const newPageOptions = requireUncached(fileSrc);
+          console.log(newPageOptions);
           config.customOptions = _.merge({}, newPageOptions, config.customOptions);
         } catch {}
       }
@@ -128,6 +128,7 @@ const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions }) => {
 
     pathArr.pop();
   }
+  config.customOptions = _.merge({}, originalCustomOptions, config.customOptions);
 };
 
 module.exports = {
