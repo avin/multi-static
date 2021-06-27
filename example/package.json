@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node ./node_modules/multi-static/dev.js",
     "build": "node ./node_modules/multi-static/build.js",
+    "postinstall": "node ./postinstall.js",
     "dev:site1": "npm run dev -- --config ./configs/site1.config.js",
     "dev:site2": "npm run dev -- --config ./configs/site2.config.js",
     "build:site1": "npm run build -- --config ./configs/site1.config.js",
