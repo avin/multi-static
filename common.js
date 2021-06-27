@@ -104,7 +104,6 @@ const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions }) => {
   while (pathArr.length) {
     const optionsPath = pathArr.join('/') + '/' + '_options.js';
 
-    // Пытаемся прочитать конфиг
     for (let [staticPath, serveLocation] of config.mapping) {
       serveLocation = config.mappingDevLocationRewrite(serveLocation);
 
@@ -120,7 +119,6 @@ const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions }) => {
 
         try {
           const newPageOptions = requireUncached(fileSrc);
-          console.log(newPageOptions);
           config.customOptions = _.merge({}, newPageOptions, config.customOptions);
         } catch {}
       }

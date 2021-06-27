@@ -19,7 +19,7 @@ function generateWebpackConfig({
     },
     devtool: (() => {
       if (isEnvDevelopment) {
-        return 'eval';
+        return 'inline-cheap-source-map';
       } else if (isEnvProduction) {
         return useProductionSourceMap ? 'source-map' : false;
       }
@@ -32,6 +32,13 @@ function generateWebpackConfig({
     },
     plugins: [],
     performance: false,
+    resolve: {
+      alias: {
+        react: 'preact/compat',
+        'react-dom/test-utils': 'preact/test-utils',
+        'react-dom': 'preact/compat',
+      },
+    },
     module: {
       rules: [
         {
@@ -42,6 +49,12 @@ function generateWebpackConfig({
             cacheDirectory: true,
             cacheCompression: false,
             compact: isEnvProduction,
+
+            presets: [['@babel/preset-env'], ['@babel/preset-react']],
+            plugins: [
+              ['@babel/transform-runtime'],
+              ['@babel/plugin-proposal-class-properties'],
+            ],
           },
         },
       ],
@@ -90,6 +103,8 @@ function generateWebpackConfig({
       child_process: 'empty',
     },
   };
+
+  console.log(JSON.stringify(config, null, 2));
 
   return config;
 }

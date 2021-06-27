@@ -134,6 +134,11 @@ module.exports = {
 
           await new Promise((resolve, reject) => {
             webpack(config, (err, stats) => {
+              const errorsText = stats.toString({ all: false, errors: true });
+              if (errorsText) {
+                console.log(errorsText);
+              }
+
               if (err) {
                 return reject();
               }
