@@ -1,0 +1,16 @@
+{
+  "name": "_src",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.jsx",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "a.vinogradov",
+  "license": "ISC",
+  "dependencies": {
+    "dayjs": "^1.10.5",
+    "preact": "^10.5.13"
+  }
+}
