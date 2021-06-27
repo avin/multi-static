@@ -42,7 +42,7 @@ function generateWebpackConfig({
     module: {
       rules: [
         {
-          test: /\.(js|mjs|jsx)$/,
+          test: /\.(js|mjs|jsx|ts|tsx)$/,
           exclude: [/node_modules/],
           loader: require.resolve('babel-loader'),
           options: {
@@ -50,7 +50,7 @@ function generateWebpackConfig({
             cacheCompression: false,
             compact: isEnvProduction,
 
-            presets: [['@babel/preset-env'], ['@babel/preset-react']],
+            presets: [['@babel/preset-env'], ['@babel/preset-react'], ['@babel/preset-typescript']],
             plugins: [
               ['@babel/transform-runtime'],
               ['@babel/plugin-proposal-class-properties'],

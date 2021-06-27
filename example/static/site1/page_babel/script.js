@@ -1,6 +1,6 @@
 // @process
 
-import './_src/index.jsx';
+import './_src/index.tsx';
 
 import 'promise-polyfill/src/polyfill';
 

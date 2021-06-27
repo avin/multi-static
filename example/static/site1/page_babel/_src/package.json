@@ -2,7 +2,7 @@
   "name": "_src",
   "version": "1.0.0",
   "description": "",
-  "main": "index.jsx",
+  "main": "index.tsx",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,6 +10,8 @@
   "author": "a.vinogradov",
   "license": "ISC",
   "dependencies": {
+    "@types/react": "^17.0.11",
+    "@types/react-dom": "^17.0.8",
     "dayjs": "^1.10.5",
     "preact": "^10.5.13"
   }
