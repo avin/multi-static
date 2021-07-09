@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import dayjs from 'dayjs';
+import './styles.scss';
+import styles from './styles.module.scss';
 
 interface Props {
   name: string;
@@ -10,7 +12,9 @@ const HelloMessage = ({ name }: Props): JSX.Element => {
 
   return (
     <div>
-      <div>Привет, {name}</div>
+      <div>
+        Привет, <span className={styles.red}>{name}</span>
+      </div>
       <div>{time}</div>
     </div>
   );

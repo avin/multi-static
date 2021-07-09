@@ -1,5 +1,11 @@
 const TerserPlugin = require('terser-webpack-plugin');
-const path = require('path');
+const postcssNormalize = require('postcss-normalize');
+const getCSSModuleLocalIdent = require('./getCSSModuleLocalIdent');
+
+const cssRegex = /\.css$/;
+const cssModuleRegex = /\.module\.css$/;
+const sassRegex = /\.(scss|sass)$/;
+const sassModuleRegex = /\.module\.(scss|sass)$/;
 
 function generateWebpackConfig({
   src = '',
@@ -11,6 +17,42 @@ function generateWebpackConfig({
 } = {}) {
   const isEnvDevelopment = mode === 'development';
   const isEnvProduction = mode === 'production';
+
+  const getStyleLoaders = (cssOptions, preProcessor) => {
+    const loaders = [
+      require.resolve('style-loader'),
+      {
+        loader: require.resolve('css-loader'),
+        options: cssOptions,
+      },
+      {
+        loader: require.resolve('postcss-loader'),
+        options: {
+          postcssOptions: {
+            plugins: [
+              require('postcss-flexbugs-fixes'),
+              [
+                require('postcss-preset-env'),
+                {
+                  autoprefixer: {
+                    flexbox: 'no-2009',
+                  },
+                  stage: 3,
+                },
+              ],
+              postcssNormalize(),
+            ],
+          },
+        },
+      },
+    ].filter(Boolean);
+    if (preProcessor) {
+      loaders.push({
+        loader: require.resolve(preProcessor),
+      });
+    }
+    return loaders;
+  };
 
   const config = {
     mode,
@@ -51,11 +93,50 @@ function generateWebpackConfig({
             compact: isEnvProduction,
 
             presets: [['@babel/preset-env'], ['@babel/preset-react'], ['@babel/preset-typescript']],
-            plugins: [
-              ['@babel/transform-runtime'],
-              ['@babel/plugin-proposal-class-properties'],
-            ],
+            plugins: [['@babel/transform-runtime'], ['@babel/plugin-proposal-class-properties']],
           },
+        },
+        {
+          test: cssRegex,
+          exclude: cssModuleRegex,
+          use: getStyleLoaders(
+            {
+              importLoaders: 3,
+            },
+            'sass-loader'
+          ),
+        },
+        {
+          test: cssModuleRegex,
+          use: getStyleLoaders({
+            importLoaders: 1,
+            modules: {
+              getLocalIdent: getCSSModuleLocalIdent,
+            },
+          }),
+        },
+        {
+          test: sassRegex,
+          exclude: sassModuleRegex,
+          use: getStyleLoaders(
+            {
+              importLoaders: 3,
+            },
+            'sass-loader'
+          ),
+          sideEffects: true,
+        },
+        {
+          test: sassModuleRegex,
+          use: getStyleLoaders(
+            {
+              importLoaders: 3,
+              modules: {
+                getLocalIdent: getCSSModuleLocalIdent,
+              },
+            },
+            'sass-loader'
+          ),
         },
       ],
     },
@@ -104,7 +185,7 @@ function generateWebpackConfig({
     },
   };
 
-  console.log(JSON.stringify(config, null, 2));
+  // console.log(JSON.stringify(config, null, 2));
 
   return config;
 }
