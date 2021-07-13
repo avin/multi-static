@@ -57,7 +57,7 @@ const defaultConfig = {
   fileBuildProcessing: defaultFileBuildProcessing,
   mappingDevLocationRewrite: (dst) => dst,
   mappingBuildLocationRewrite: (dst) => dst,
-  beforeBuild: () => {},
+  beforeBuild() {},
   afterBuild: () => {},
   beforeDevStart: () => {},
   customOptions: {},

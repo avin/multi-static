@@ -166,11 +166,16 @@ module.exports = {
   },
 
   beforeBuild() {
-    console.log('> beforeBuild task running...');
+    console.log('> beforeBuild start...');
+
+    console.log(`+ removing ${this.buildPath}`);
+    fs.removeSync(this.buildPath);
+
+    console.log('> beforeBuild end.\n');
   },
 
   afterBuild() {
-    console.log('> afterBuild task running...');
+    console.log('> afterBuild start...');
 
     // Process tags with links to files and substitute prefixes with hashes for links
     getFilesList('./build')
@@ -181,6 +186,8 @@ module.exports = {
           writeToFile: true,
         });
       });
+
+    console.log('> afterBuild end\n');
   },
 
   beforeDevStart(app) {

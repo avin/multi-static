@@ -11,8 +11,6 @@ const { readConfig, getFilesList, mixInCustomPageOptions } = require('./common')
   const config = readConfig(argv.config);
   const originalCustomOptions = config.customOptions;
 
-  fs.removeSync(config.buildPath);
-
   await config.beforeBuild();
 
   // Copy files according to the list from config.mapping
