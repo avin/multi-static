@@ -81,12 +81,14 @@ const readConfig = (userConfigSrc) => {
 
 // Get all files in a folder
 const getFilesList = (dir, pathList = []) => {
-  fs.readdirSync(dir).forEach((file) => {
-    const absolute = path.join(dir, file);
-    if (fs.statSync(absolute).isDirectory()) {
-      return getFilesList(absolute, pathList);
-    } else return pathList.push(absolute);
-  });
+  if (fs.pathExistsSync(dir)) {
+    fs.readdirSync(dir).forEach((file) => {
+      const absolute = path.join(dir, file);
+      if (fs.statSync(absolute).isDirectory()) {
+        return getFilesList(absolute, pathList);
+      } else return pathList.push(absolute);
+    });
+  }
 
   return pathList;
 };
