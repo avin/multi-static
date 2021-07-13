@@ -21,7 +21,13 @@ const { readConfig, getFilesList, mixInCustomPageOptions } = require('./common')
 
     const staticFilesPath = path.join(process.cwd(), staticPath);
 
-    const files = getFilesList(staticFilesPath);
+    const files = (() => {
+      if (fs.lstatSync(staticFilesPath).isDirectory()) {
+        return getFilesList(staticFilesPath);
+      } else {
+        return [staticFilesPath];
+      }
+    })();
 
     for (const fileSrc of files) {
       const reqPath =

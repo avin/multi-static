@@ -16,5 +16,6 @@ module.exports = {
   mapping: [
     ['./static/site1', '/root'],
     ['./static/_common', '/root'],
+    ['./static/_common/foo.json', '/root/page1/foo.json'],
   ],
 };
