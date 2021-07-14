@@ -100,13 +100,18 @@ module.exports = {
         '.css'
       );
 
-      if (!fs.pathExistsSync(cssDestinationFileSrc) && fs.pathExistsSync(scssFileSrc)) {
-        const firstLine = await readFirstLine(scssFileSrc);
-        if (firstLine === '// @process') {
-          const cssContent = processScssFile(scssFileSrc);
+      if (fs.pathExistsSync(scssFileSrc)) {
+        if (!fs.pathExistsSync(cssDestinationFileSrc)) {
+          const firstLine = await readFirstLine(scssFileSrc);
+          if (firstLine === '// @process') {
+            const cssContent = processScssFile(scssFileSrc);
 
-          fs.ensureFileSync(cssDestinationFileSrc);
-          fs.writeFileSync(cssDestinationFileSrc, cssContent);
+            fs.ensureFileSync(cssDestinationFileSrc);
+            fs.writeFileSync(cssDestinationFileSrc, cssContent);
+            return;
+          }
+        } else {
+          // Если css с таким именем есть, то scss копировать уже не надо
           return;
         }
       }
