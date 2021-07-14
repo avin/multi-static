@@ -4,6 +4,8 @@ const argv = require('yargs').argv;
 const path = require('path');
 const _ = require('lodash');
 const fs = require('fs-extra');
+const glob = require('glob');
+const { getGlobBasePath } = require('./common');
 const { readConfig, getFilesList, mixInCustomPageOptions } = require('./common');
 
 (async () => {
@@ -20,12 +22,26 @@ const { readConfig, getFilesList, mixInCustomPageOptions } = require('./common')
     const buildPath = path.join(config.buildPath, serveLocation);
 
     const staticFilesPath = path.join(process.cwd(), staticPath);
+    let staticFilesBasePath;
 
     const files = (() => {
-      if (fs.lstatSync(staticFilesPath).isDirectory()) {
-        return getFilesList(staticFilesPath);
+      if (glob.hasMagic(staticFilesPath)) {
+        // Путь без магической части
+        staticFilesBasePath = path.join(process.cwd(), getGlobBasePath(staticPath));
+
+        return glob.sync(staticFilesPath).map((i) => path.resolve(i));
       } else {
-        return [staticFilesPath];
+        if (fs.lstatSync(staticFilesPath).isDirectory()) {
+          // Путь как он есть
+          staticFilesBasePath = staticFilesPath;
+
+          return getFilesList(staticFilesPath);
+        } else {
+          // Путь без самого имени файла
+          staticFilesBasePath = path.join(process.cwd(), staticPath.replace(/\/[^\/]+$/, ''));
+
+          return [staticFilesPath];
+        }
       }
     })();
 
@@ -33,7 +49,7 @@ const { readConfig, getFilesList, mixInCustomPageOptions } = require('./common')
       const reqPath =
         serveLocation +
         fileSrc
-          .replace(new RegExp(`^${_.escapeRegExp(staticFilesPath)}`, ''), '')
+          .replace(new RegExp(`^${_.escapeRegExp(staticFilesBasePath)}`, ''), '')
           .replace(new RegExp(_.escapeRegExp(path.sep), 'g'), '/');
 
       mixInCustomPageOptions({
@@ -45,10 +61,11 @@ const { readConfig, getFilesList, mixInCustomPageOptions } = require('./common')
       // ---------------------------
 
       const destinationFileSrc = fileSrc.replace(
-        new RegExp(`^${_.escapeRegExp(staticFilesPath)}`),
+        new RegExp(`^${_.escapeRegExp(staticFilesBasePath)}`),
         buildPath
       );
 
+      console.log({ fileSrc, destinationFileSrc });
       await config.fileBuildProcessing({ fileSrc, destinationFileSrc });
     }
   }

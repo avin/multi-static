@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs-extra');
 const _ = require('lodash');
+const glob = require('glob');
 const mime = require('mime-types');
 
 const defaultFileDevProcessing = ({ fileSrc, res, modifyData = (data) => data }) => {
@@ -131,6 +132,21 @@ const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions }) => {
   config.customOptions = _.merge({}, originalCustomOptions, config.customOptions);
 };
 
+const getGlobBasePath = (globString, pathSep = '/') => {
+  let globParts = globString.split(pathSep);
+
+  let magicIndex;
+  for (let i = 0; i < globParts.length; i += 1) {
+    if (glob.hasMagic(globParts[i])) {
+      magicIndex = i;
+      break;
+    }
+  }
+
+  const result = globParts.splice(0, magicIndex).join('/');
+  return result;
+};
+
 module.exports = {
   defaultConfig,
   readConfig,
@@ -138,4 +154,5 @@ module.exports = {
   defaultFileDevProcessing,
   defaultFileBuildProcessing,
   mixInCustomPageOptions,
+  getGlobBasePath,
 };
