@@ -65,7 +65,6 @@ const { readConfig, getFilesList, mixInCustomPageOptions } = require('./common')
         buildPath
       );
 
-      console.log({ fileSrc, destinationFileSrc });
       await config.fileBuildProcessing({ fileSrc, destinationFileSrc });
     }
   }
