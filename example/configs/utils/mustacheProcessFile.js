@@ -4,6 +4,8 @@ const _ = require('lodash');
 const safeEval = require('./safeEval');
 const Mustache = require('mustache');
 
+Mustache.escape = (text) => text;
+
 /**
  * Пропустить файл через mustache
  * @param fileSrc
