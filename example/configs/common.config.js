@@ -37,8 +37,9 @@ module.exports = {
         if (firstLine === '// @process') {
           const cssContent = processScssFile(scssFile);
           res.setHeader('Content-Type', 'text/css');
+          res.send(cssContent.toString());
 
-          return res.send(cssContent.toString());
+          return true;
         }
       }
     }
@@ -71,7 +72,9 @@ module.exports = {
           _webpackMiddlewaresCache[fileSrc] = cachedWebpackMiddleware;
         }
 
-        return cachedWebpackMiddleware(req, res, next);
+        cachedWebpackMiddleware(req, res, next);
+
+        return true;
       }
     }
 
@@ -82,7 +85,9 @@ module.exports = {
       const data = mustacheProcessFile(fileSrc, this.customOptions);
 
       res.setHeader('Content-Type', 'text/html');
-      return res.send(data);
+      res.send(data);
+
+      return true;
     }
 
     return defaultFileDevProcessing(params);

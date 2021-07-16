@@ -15,7 +15,7 @@ module.exports = {
 
   mapping: [
     ['./static/site2', '/root'],
-    // ['./static/_common', '/root'],
+    ['./static/_common', '/root'],
     // ['./static/_common/common.html', '/root'],
     // ['./static/_blob/*.svg', '/root'],
     // ['./static/_blob/**/*.{ico,png}', '/root'],
