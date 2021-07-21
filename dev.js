@@ -33,6 +33,7 @@ app.use(async function (req, res, next) {
     reqPath: req.path,
     config,
     originalCustomOptions,
+    mode: 'dev'
   });
 
   // ---------------------------

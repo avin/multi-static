@@ -56,6 +56,7 @@ const { readConfig, getFilesList, mixInCustomPageOptions } = require('./common')
         reqPath,
         config,
         originalCustomOptions,
+        mode: 'build',
       });
 
       // ---------------------------

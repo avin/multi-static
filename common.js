@@ -100,15 +100,19 @@ function requireUncached(module) {
 }
 
 // Mix content of _options.js files to pageOptions of current config
-const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions }) => {
-  config.customOptions = {};
+const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions, mode }) => {
+  let newCustomOptions = {};
 
   const pathArr = reqPath.split('/').slice(0, -1);
   while (pathArr.length) {
     const optionsPath = pathArr.join('/') + '/' + '_options.js';
 
     for (let [staticPath, serveLocation] of config.mapping) {
-      serveLocation = config.mappingDevLocationRewrite(serveLocation);
+      if (mode === 'build') {
+        serveLocation = config.mappingBuildLocationRewrite(serveLocation);
+      } else if (mode === 'dev') {
+        serveLocation = config.mappingDevLocationRewrite(serveLocation);
+      }
 
       // If the route falls under the mapping record
       if (optionsPath.startsWith(serveLocation)) {
@@ -122,14 +126,14 @@ const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions }) => {
 
         try {
           const newPageOptions = requireUncached(fileSrc);
-          config.customOptions = _.merge({}, newPageOptions, config.customOptions);
+          newCustomOptions = _.merge({}, newPageOptions, newCustomOptions);
         } catch {}
       }
     }
 
     pathArr.pop();
   }
-  config.customOptions = _.merge({}, originalCustomOptions, config.customOptions);
+  config.customOptions = _.merge({}, originalCustomOptions, newCustomOptions);
 };
 
 const getGlobBasePath = (globString, pathSep = '/') => {
