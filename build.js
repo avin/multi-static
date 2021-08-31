@@ -57,6 +57,7 @@ const { readConfig, getFilesList, mixInCustomPageOptions } = require('./common')
         config,
         originalCustomOptions,
         mode: 'build',
+        optionsFileName: config.optionsFileName
       });
 
       // ---------------------------

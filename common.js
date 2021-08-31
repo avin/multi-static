@@ -62,6 +62,7 @@ const defaultConfig = {
   afterBuild: () => {},
   beforeDevStart: () => {},
   customOptions: {},
+  optionsFileName: '_options.js',
 };
 
 // Read user config
@@ -100,12 +101,18 @@ function requireUncached(module) {
 }
 
 // Mix content of _options.js files to pageOptions of current config
-const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions, mode }) => {
+const mixInCustomPageOptions = ({
+  reqPath,
+  config,
+  originalCustomOptions,
+  mode,
+  optionsFileName,
+}) => {
   let newCustomOptions = {};
 
   const pathArr = reqPath.split('/').slice(0, -1);
   while (pathArr.length) {
-    const optionsPath = pathArr.join('/') + '/' + '_options.js';
+    const optionsPath = pathArr.join('/') + '/' + optionsFileName;
 
     for (let [staticPath, serveLocation] of config.mapping) {
       if (mode === 'build') {
