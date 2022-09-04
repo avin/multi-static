@@ -4,7 +4,7 @@ const cli = cac('multi-static');
 
 cli
   .command('dev', 'Run dev server')
-  .option('-p, --port', 'Server port')
+  .option('-p, --port <port>', 'Server port')
   .action((options) => {
     console.log('++++', options);
   });
