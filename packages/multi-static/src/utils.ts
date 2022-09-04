@@ -1,22 +1,13 @@
 import path from 'path';
 import mime from 'mime-types';
 import glob from 'glob';
-import _ from 'lodash';
+import _, { noop } from 'lodash';
 import fs from 'fs-extra';
-import { MultiStaticConfig } from './types';
-import { Response } from 'express';
+import { FileBuildProcessingParams, FileDevProcessingParams, MultiStaticConfig } from './types';
 
-export const defaultFileDevProcessing = ({
-  fileSrc,
-  res,
-  modifyData = (data, fileSrc) => data,
-}: {
-  fileSrc: string;
-  res: Response;
-  modifyData: (data: any, fileSrc: string) => any;
-}): boolean => {
+export const defaultFileDevProcessing = ({ fileSrc, res }: FileDevProcessingParams): boolean => {
   // Reading the contents of the file
-  let data: any;
+  let data: Buffer | undefined;
   try {
     if (fs.pathExistsSync(fileSrc)) {
       data = fs.readFileSync(fileSrc);
@@ -27,8 +18,6 @@ export const defaultFileDevProcessing = ({
 
   // If something is read, we return the content
   if (data !== undefined) {
-    data = modifyData(data, fileSrc);
-
     const mimeType = mime.lookup(fileSrc);
     if (mimeType) {
       res.setHeader('Content-Type', mimeType);
@@ -40,20 +29,10 @@ export const defaultFileDevProcessing = ({
   return false;
 };
 
-export const defaultFileBuildProcessing = ({
-  fileSrc,
-  destinationFileSrc,
-  modifyData = (data, fileSrc) => data,
-}: {
-  fileSrc: string;
-  destinationFileSrc: string;
-  modifyData: (data: any, fileSrc: string) => any;
-}) => {
+export const defaultFileBuildProcessing = ({ fileSrc, destinationFileSrc }: FileBuildProcessingParams) => {
   // Only if the file is not yet at the destination
   if (!fs.pathExistsSync(destinationFileSrc) && fs.pathExistsSync(fileSrc)) {
-    let data = fs.readFileSync(fileSrc);
-
-    data = modifyData(data, fileSrc);
+    const data = fs.readFileSync(fileSrc);
 
     fs.ensureFileSync(destinationFileSrc);
     fs.writeFileSync(destinationFileSrc, data);
@@ -73,9 +52,9 @@ export const defaultConfig: MultiStaticConfig = {
   fileBuildProcessing: defaultFileBuildProcessing,
   mappingDevLocationRewrite: (dst) => dst,
   mappingBuildLocationRewrite: (dst) => dst,
-  beforeBuild: _.noop,
-  afterBuild: _.noop,
-  beforeDevStart: _.noop,
+  beforeBuild: noop,
+  afterBuild: noop,
+  beforeDevStart: noop,
   customOptions: {},
   optionsFileName: '_options.js',
 };
@@ -110,13 +89,25 @@ export const getFilesList = (dir: string, pathList: string[] = []) => {
   return pathList;
 };
 
-export const requireUncached = (module: string) => {
+export const requireUncached = <T>(module: string) => {
   delete require.cache[require.resolve(module)];
-  return require(module);
+  return require(module) as T;
 };
 
 // Mix content of _options.js files to pageOptions of current config
-export const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions, mode, optionsFileName }) => {
+export const mixInCustomPageOptions = ({
+  reqPath,
+  config,
+  originalCustomOptions,
+  mode,
+  optionsFileName,
+}: {
+  reqPath: string;
+  config: MultiStaticConfig;
+  originalCustomOptions: Record<string, unknown>;
+  mode: 'build' | 'dev';
+  optionsFileName: string;
+}) => {
   let newCustomOptions = {};
 
   const pathArr = reqPath.split('/').slice(0, -1);
@@ -138,9 +129,11 @@ export const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions,
         const fileSrc = path.join(process.cwd(), staticPath, cleanServeLocation);
 
         try {
-          const newPageOptions = requireUncached(fileSrc);
+          const newPageOptions = requireUncached<Record<string, unknown>>(fileSrc);
           newCustomOptions = _.merge({}, newPageOptions, newCustomOptions);
-        } catch {}
+        } catch (e) {
+          //
+        }
       }
     }
 
@@ -152,7 +145,7 @@ export const mixInCustomPageOptions = ({ reqPath, config, originalCustomOptions,
 export const getGlobBasePath = (globString: string, pathSep = '/') => {
   const globParts = globString.split(pathSep);
 
-  let magicIndex;
+  let magicIndex = 0;
   for (let i = 0; i < globParts.length; i += 1) {
     if (glob.hasMagic(globParts[i])) {
       magicIndex = i;
@@ -160,6 +153,6 @@ export const getGlobBasePath = (globString: string, pathSep = '/') => {
     }
   }
 
-  const result = globParts.splice(0, magicIndex).join('/');
+  const result: string = globParts.splice(0, magicIndex).join('/');
   return result;
 };

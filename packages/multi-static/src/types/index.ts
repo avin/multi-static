@@ -1,5 +1,18 @@
 import { Express, Request, Response, NextFunction } from 'express';
 
+export type FileDevProcessingParams = {
+  fileSrc: string;
+  req?: Request;
+  res: Response;
+  next?: NextFunction;
+};
+
+export type FileBuildProcessingParams = {
+  fileSrc: string;
+  destinationFileSrc: string;
+  modifyData?: <T>(data: T, fileSrc: string) => T;
+};
+
 export interface MultiStaticConfig {
   /** Настройки web-сервера в dev режиме */
   http: {
@@ -15,20 +28,10 @@ export interface MultiStaticConfig {
   mapping: [string, string][];
 
   /** Функция обработки файла в dev-режиме */
-  fileDevProcessing: ({
-    fileSrc,
-    req,
-    res,
-    next,
-  }: {
-    fileSrc: string;
-    req: Request;
-    res: Response;
-    next: NextFunction;
-  }) => Promise<boolean> | boolean;
+  fileDevProcessing: (params: FileDevProcessingParams) => Promise<boolean> | boolean;
 
   /** Функция обработки файла в build-режиме */
-  fileBuildProcessing: (...args: any) => Promise<void> | void;
+  fileBuildProcessing: (params: FileBuildProcessingParams) => Promise<void> | void;
 
   /** ?? */
   mappingDevLocationRewrite: (dst: string) => string;
