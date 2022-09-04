@@ -3,7 +3,7 @@ import mime from 'mime-types';
 import glob from 'glob';
 import _ from 'lodash';
 import fs from 'fs-extra';
-import { Config } from './types';
+import { MultiStaticConfig } from './types';
 import { Response } from 'express';
 
 export const defaultFileDevProcessing = ({
@@ -14,7 +14,7 @@ export const defaultFileDevProcessing = ({
   fileSrc: string;
   res: Response;
   modifyData: (data: any, fileSrc: string) => any;
-}) => {
+}): boolean => {
   // Reading the contents of the file
   let data: any;
   try {
@@ -34,9 +34,10 @@ export const defaultFileDevProcessing = ({
       res.setHeader('Content-Type', mimeType);
     }
 
-    return res.send(data);
+    res.send(data);
+    return true;
   }
-  return undefined;
+  return false;
 };
 
 export const defaultFileBuildProcessing = ({
@@ -60,7 +61,7 @@ export const defaultFileBuildProcessing = ({
 };
 
 // Default config
-export const defaultConfig: Config = {
+export const defaultConfig: MultiStaticConfig = {
   http: {
     port: 3000,
     key: undefined,
@@ -84,7 +85,7 @@ export const readConfig = (userConfigSrc: string) => {
   const config = _.cloneDeep(defaultConfig);
 
   try {
-    const userConfig = require(path.join(process.cwd(), userConfigSrc)) as Config;
+    const userConfig = require(path.join(process.cwd(), userConfigSrc)) as MultiStaticConfig;
     _.merge(config, userConfig);
   } catch (e) {
     console.error('Wrong config');

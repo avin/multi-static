@@ -6,6 +6,7 @@ module.exports = {
     'consistent-return': 'warn',
     'no-console': ['warn', { allow: ['warn', 'error', 'info', 'dir'] }],
     'spaced-comment': ['warn', 'always', { markers: ['/'] }],
+    'prefer-const': ['error', { destructuring: 'all' }],
   },
   env: {
     node: true,

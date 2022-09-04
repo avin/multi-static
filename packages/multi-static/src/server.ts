@@ -1,4 +1,4 @@
-import { Config } from './types';
+import { MultiStaticConfig } from './types';
 import express from 'express';
 import _ from 'lodash';
 import path from 'path';
@@ -10,12 +10,12 @@ import glob from 'glob';
 import fs from 'fs';
 import { AddressInfo } from 'net';
 
-export const startServer = (config: Config): https.Server | http.Server => {
+export const startServer = async (config: MultiStaticConfig): Promise<https.Server | http.Server> => {
   const originalCustomOptions = config.customOptions;
 
   const app = express();
 
-  config.beforeDevStart(app);
+  await config.beforeDevStart(app);
 
   // Хедеры пресекающие работу кеша в браузере
   app.use((_req, res, next) => {
@@ -45,7 +45,7 @@ export const startServer = (config: Config): https.Server | http.Server => {
       if (req.path.startsWith(serveLocation)) {
         const cleanServeLocation = req.path.replace(new RegExp(`^${_.escapeRegExp(serveLocation)}`, ''), '');
 
-        let fileSrc;
+        let fileSrc: string | undefined;
 
         if (glob.hasMagic(staticPath)) {
           // Если glob

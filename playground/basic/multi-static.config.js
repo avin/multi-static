@@ -1,3 +1,6 @@
+/**
+ * @type {Config}
+ */
 module.exports = {
-  mapping: [['./static', '/']],
+  mapping: [['./static', '/serve']],
 };

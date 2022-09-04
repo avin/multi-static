@@ -1,18 +1,21 @@
 import cac from 'cac';
 import { startServer } from './server';
 import { defaultConfig, readConfig } from './utils';
+import { build } from './builder';
 
 const cli = cac('multi-static');
+
+const defaultConfigFileName = 'multi-static.config.js';
 
 cli
   .command('dev', 'Run dev server')
   .option('-c, --config <config>', 'Config', {
-    default: 'multi-static.config.js',
+    default: defaultConfigFileName,
   })
   .option('-p, --port <port>', 'Server port', {
     default: defaultConfig.http.port,
   })
-  .action((options) => {
+  .action(async (options) => {
     const config = {
       ...readConfig(options.config),
       http: {
@@ -20,14 +23,19 @@ cli
         port: options.port,
       },
     };
-    // const config = {
-    //   ...defaultConfig,
-    //   http: {
-    //     ...defaultConfig.http,
-    //     port: options.port,
-    //   },
-    // };
-    startServer(config);
+    await startServer(config);
+  });
+
+cli
+  .command('build', 'Build')
+  .option('-c, --config <config>', 'Config', {
+    default: defaultConfigFileName,
+  })
+  .action(async (options) => {
+    const config = {
+      ...readConfig(options.config),
+    };
+    await build(config);
   });
 
 cli.help();
