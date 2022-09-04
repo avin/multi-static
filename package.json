@@ -5,8 +5,14 @@
     "packages/*",
     "playground/*"
   ],
+  "engines": {
+    "npm": "please-use-yarn",
+    "yarn": "1.22.18",
+    "node": "16.13.2"
+  },
   "scripts": {
     "postinstall": "husky install",
+    "_preinstall": "node tools/preinstall-script.js",
     "prettier": "prettier --ignore-unknown --write **"
   },
   "devDependencies": {
