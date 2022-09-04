@@ -5,32 +5,26 @@ import noop from 'lodash/noop';
 import merge from 'lodash/merge';
 import escapeRegExp from 'lodash/escapeRegExp';
 import fs from 'fs-extra';
-import { FileBuildProcessingParams, FileDevProcessingParams, MultiStaticConfig } from './types';
+import { DevTransformer, FileBuildProcessingParams, MultiStaticConfig } from './types';
 import { transformSync as esbuildTransformSync } from 'esbuild';
 import vm from 'vm';
 
-export const defaultFileDevProcessing = ({ fileSrc, res }: FileDevProcessingParams): boolean => {
-  // Reading the contents of the file
-  let data: Buffer | undefined;
-  try {
-    if (fs.pathExistsSync(fileSrc)) {
-      data = fs.readFileSync(fileSrc);
-    }
-  } catch (e) {
-    console.warn('read error');
+export const defaultDevTransformerReader: DevTransformer['reader'] = ({ filePath }) => {
+  return fs.readFileSync(filePath, 'utf-8');
+};
+
+export const defaultDevTransformerMakeResponse: DevTransformer['makeResponse'] = ({ content, reqPath, res }) => {
+  const mimeType = mime.lookup(reqPath);
+  if (mimeType) {
+    res.setHeader('Content-Type', mimeType);
   }
 
-  // If something is read, we return the content
-  if (data !== undefined) {
-    const mimeType = mime.lookup(fileSrc);
-    if (mimeType) {
-      res.setHeader('Content-Type', mimeType);
-    }
+  res.send(content);
+};
 
-    res.send(data);
-    return true;
-  }
-  return false;
+export const defaultDevTransformer: Pick<DevTransformer, 'reader' | 'makeResponse'> = {
+  reader: defaultDevTransformerReader,
+  makeResponse: defaultDevTransformerMakeResponse,
 };
 
 export const defaultFileBuildProcessing = ({ fileSrc, destinationFileSrc }: FileBuildProcessingParams) => {
@@ -52,8 +46,9 @@ export const defaultConfig: MultiStaticConfig = {
   },
   buildPath: path.join(process.cwd(), 'build'),
   mapping: [],
-  fileDevProcessing: defaultFileDevProcessing,
-  fileBuildProcessing: defaultFileBuildProcessing,
+  devTransformers: [defaultDevTransformer],
+  // fileDevProcessing: defaultFileDevProcessing,
+  // fileBuildProcessing: defaultFileBuildProcessing,
   mappingDevLocationRewrite: (dst) => dst,
   mappingBuildLocationRewrite: (dst) => dst,
   beforeBuild: noop,
@@ -61,6 +56,10 @@ export const defaultConfig: MultiStaticConfig = {
   beforeDevStart: noop,
   customOptions: {},
   optionsFileName: '_options.js',
+};
+
+export const defineConfig = (config: Partial<MultiStaticConfig>) => {
+  return config;
 };
 
 export const extendedRequire = <T>(id: string): T => {

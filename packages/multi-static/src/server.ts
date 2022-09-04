@@ -4,7 +4,12 @@ import escapeRegExp from 'lodash/escapeRegExp';
 import path from 'path';
 import https from 'https';
 import http from 'http';
-import { getGlobBasePath, mixInCustomPageOptions } from './utils';
+import {
+  defaultDevTransformerMakeResponse,
+  defaultDevTransformerReader,
+  getGlobBasePath,
+  mixInCustomPageOptions,
+} from './utils';
 // import glob from 'fast-glob';
 import glob from 'glob';
 import fs from 'fs';
@@ -28,8 +33,9 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
   });
 
   app.use(async function (req, res, next) {
+    const reqPath = req.path;
     mixInCustomPageOptions({
-      reqPath: req.path,
+      reqPath,
       config,
       originalCustomOptions,
       mode: 'dev',
@@ -76,8 +82,38 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
         }
 
         if (fileSrc) {
-          const success = await config.fileDevProcessing({ fileSrc, req, res, next });
-          if (success) {
+          // const success = await config.fileDevProcessing({ fileSrc, req, res, next });
+
+          const filePath = fileSrc;
+          console.log({ filePath: fileSrc, reqPath });
+          for (const devTransformer of config.devTransformers) {
+            // 1) Test
+            if (devTransformer.test && !devTransformer.test.test(reqPath)) {
+              continue;
+            }
+            const ctx = {};
+
+            // 2) Read
+            let content: string | null;
+            try {
+              const reader = devTransformer.reader || defaultDevTransformerReader;
+              content = await reader({ reqPath, filePath, ctx });
+              if (content === null) {
+                continue;
+              }
+            } catch (e) {
+              continue;
+            }
+
+            // 3) Process
+            for (const processor of devTransformer.processors || []) {
+              content = await processor({ content, reqPath, filePath, ctx });
+            }
+
+            // 4) Response
+            const makeResponse = devTransformer.reader || defaultDevTransformerMakeResponse;
+            await makeResponse({ content, reqPath, filePath, res, ctx });
+
             return;
           }
         }

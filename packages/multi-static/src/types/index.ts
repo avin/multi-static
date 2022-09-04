@@ -13,6 +13,37 @@ export type FileBuildProcessingParams = {
   modifyData?: <T>(data: T, fileSrc: string) => T;
 };
 
+// export type DevTransformer = {
+//   test?: RegExp;
+//   reader: (params: { reqPath: string; filePath: string; ctx: TContext }) => Promise<string | null> | string | null;
+//   processors?: ((params: { content: TContent; reqPath: string; filePath: string; ctx: TContext }) => TContent)[];
+//   makeResponse: (params: {
+//     content: TContent;
+//     reqPath: string;
+//     filePath: string;
+//     res: Response;
+//     ctx: TContext;
+//   }) => Promise<void> | void;
+// };
+
+export interface DevTransformer {
+  test: RegExp;
+  reader: (params: { reqPath: string; filePath: string; ctx: object }) => Promise<string | null> | string | null;
+  processors: ((params: {
+    content: string;
+    reqPath: string;
+    filePath: string;
+    ctx: object;
+  }) => Promise<string> | string)[];
+  makeResponse: (params: {
+    content: string;
+    reqPath: string;
+    filePath: string;
+    res: Response;
+    ctx: object;
+  }) => Promise<void> | void;
+}
+
 export interface MultiStaticConfig {
   /** Настройки web-сервера в dev режиме */
   http: {
@@ -28,10 +59,10 @@ export interface MultiStaticConfig {
   mapping: [string, string][];
 
   /** Функция обработки файла в dev-режиме */
-  fileDevProcessing: (params: FileDevProcessingParams) => Promise<boolean> | boolean;
+  // fileDevProcessing: (params: FileDevProcessingParams) => Promise<boolean> | boolean;
 
   /** Функция обработки файла в build-режиме */
-  fileBuildProcessing: (params: FileBuildProcessingParams) => Promise<void> | void;
+  // fileBuildProcessing: (params: FileBuildProcessingParams) => Promise<void> | void;
 
   /** ?? */
   mappingDevLocationRewrite: (dst: string) => string;
@@ -54,4 +85,10 @@ export interface MultiStaticConfig {
   /** Имя файла с дополнительными опциями.
    * Опции будут применимы ко всем файлам внутри этого каталога и к вложенным */
   optionsFileName: string;
+
+  // TODO
+  devTransformers: Partial<DevTransformer>[];
+
+  // TODO
+  buildTransformers?: any;
 }
