@@ -9,10 +9,10 @@ const config = defineConfig({
     {
       test: /\.html$/,
       processors: [
-        ({ content }) => {
+        ({ content }: { content: string }) => {
           return content.replace(/world/g, 'TRANSED');
         },
-        ({ content }) => {
+        ({ content }: { content: string }) => {
           return content.replace(/TRANSED/g, 'MORE_TRANSED');
         },
       ],
