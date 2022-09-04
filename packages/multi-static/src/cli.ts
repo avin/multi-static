@@ -5,19 +5,15 @@ import { build } from './builder';
 
 const cli = cac('multi-static');
 
-const defaultConfigFileName = 'multi-static.config.js';
-
 cli
   .command('dev', 'Run dev server')
-  .option('-c, --config <config>', 'Config', {
-    default: defaultConfigFileName,
-  })
+  .option('-c, --config <config>', 'Config')
   .option('-p, --port <port>', 'Server port', {
     default: defaultConfig.http.port,
   })
-  .action(async (options: { config: string; port: number }) => {
+  .action(async (options: { config: string | undefined; port: number }) => {
     const config = {
-      ...readConfig(options.config),
+      ...(await readConfig(options.config)),
       http: {
         ...defaultConfig.http,
         port: options.port,
@@ -28,12 +24,10 @@ cli
 
 cli
   .command('build', 'Build')
-  .option('-c, --config <config>', 'Config', {
-    default: defaultConfigFileName,
-  })
+  .option('-c, --config <config>', 'Config')
   .action(async (options: { config: string }) => {
     const config = {
-      ...readConfig(options.config),
+      ...(await readConfig(options.config)),
     };
     await build(config);
   });

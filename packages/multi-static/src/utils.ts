@@ -7,6 +7,7 @@ import escapeRegExp from 'lodash/escapeRegExp';
 import fs from 'fs-extra';
 import { FileBuildProcessingParams, FileDevProcessingParams, MultiStaticConfig } from './types';
 import { transformSync as esbuildTransformSync } from 'esbuild';
+import vm from 'vm';
 
 export const defaultFileDevProcessing = ({ fileSrc, res }: FileDevProcessingParams): boolean => {
   // Reading the contents of the file
@@ -71,8 +72,16 @@ export const extendedRequire = <T>(id: string): T => {
   const module: { exports?: { default?: unknown } } = {
     exports: {},
   };
+  const context = { module, require };
+  vm.createContext(context);
   const wrappedSrc = `(function(module, exports, require) {${code}})(module, module.exports, require);`;
-  eval(wrappedSrc);
+  const script = new vm.Script(wrappedSrc, { filename: modulePath, displayErrors: false });
+  try {
+    script.runInContext(context);
+  } catch (e) {
+    console.error(e);
+    process.exit(1);
+  }
   if (module.exports?.default) {
     return module.exports.default as T;
   }
@@ -80,21 +89,30 @@ export const extendedRequire = <T>(id: string): T => {
 };
 
 // Read user config
-export const readConfig = (userConfigSrc: string) => {
-  const config: MultiStaticConfig = merge({}, defaultConfig);
+export const readConfig = async (userConfigSrc: string | undefined) => {
+  const configSrces = userConfigSrc
+    ? [userConfigSrc]
+    : ['multi-static.config.ts', 'multi-static.config.mjs', 'multi-static.config.cjs', 'multi-static.config.js'];
 
-  try {
-    const configPath = path.join(process.cwd(), userConfigSrc);
+  for (const configSrc of configSrces) {
+    const config: MultiStaticConfig = merge({}, defaultConfig);
+
+    const configPath = path.join(process.cwd(), configSrc);
+
+    try {
+      await fs.ensureFile(configPath);
+    } catch {
+      continue;
+    }
 
     const userConfig = extendedRequire<Partial<MultiStaticConfig>>(configPath) as MultiStaticConfig;
+    console.log('+++', userConfig);
     merge(config, userConfig);
-  } catch (e) {
-    console.error('Wrong config');
-    console.error(e);
-    process.exit();
+
+    return config;
   }
 
-  return config;
+  throw new Error('Config not found');
 };
 
 // Get all files in a folder
