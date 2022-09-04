@@ -95,7 +95,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
             const ctx = {};
 
             // 2) Read
-            let content: string | null;
+            let content;
             try {
               const reader = devTransformer.reader || defaultDevTransformerReader;
               content = await reader({ reqPath, filePath, ctx });
