@@ -46,7 +46,7 @@ export interface MultiStaticConfig {
   afterBuild: () => Promise<void> | void;
 
   /** Функция вызываемая до запуска web-сервера в dev режиме */
-  beforeDevStart: (app?: Express) => Promise<void> | void;
+  beforeDevStart: (params: { app?: Express }) => Promise<void> | void;
 
   /** Дополнительные опции (могут использоваться обработчиками файлов) */
   customOptions: Record<string, unknown>;

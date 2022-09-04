@@ -15,7 +15,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
   const app = express();
 
-  await config.beforeDevStart(app);
+  await config.beforeDevStart({ app });
 
   // Хедеры пресекающие работу кеша в браузере
   app.use((req, res, next) => {
