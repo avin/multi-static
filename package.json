@@ -12,7 +12,6 @@
   },
   "scripts": {
     "postinstall": "husky install",
-    "_preinstall": "node tools/preinstall-script.js",
     "prettier": "prettier --ignore-unknown --write **"
   },
   "devDependencies": {
