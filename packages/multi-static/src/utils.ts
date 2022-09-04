@@ -64,8 +64,8 @@ export const defaultConfig: MultiStaticConfig = {
 
 export const extendedRequire = <T>(id: string): T => {
   const modulePath = require.resolve(id);
-  const configContent = fs.readFileSync(modulePath, 'utf-8');
-  const { code } = esbuildTransformSync(configContent, {
+  const moduleContent = fs.readFileSync(modulePath, 'utf-8');
+  const { code } = esbuildTransformSync(moduleContent, {
     format: 'cjs',
   });
   const module: { exports?: { default?: unknown } } = {

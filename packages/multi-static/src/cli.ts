@@ -15,7 +15,7 @@ cli
   .option('-p, --port <port>', 'Server port', {
     default: defaultConfig.http.port,
   })
-  .action(async (options) => {
+  .action(async (options: { config: string; port: number }) => {
     const config = {
       ...readConfig(options.config),
       http: {
@@ -31,7 +31,7 @@ cli
   .option('-c, --config <config>', 'Config', {
     default: defaultConfigFileName,
   })
-  .action(async (options) => {
+  .action(async (options: { config: string }) => {
     const config = {
       ...readConfig(options.config),
     };
