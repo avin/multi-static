@@ -1,6 +1,6 @@
 {
   "name": "multi-static",
-  "version": "0.1.12",
+  "version": "0.2.0",
   "author": "Avin Lambrero",
   "license": "MIT",
   "repository": {
@@ -9,12 +9,11 @@
   },
   "scripts": {
     "prebuild": "rimraf ./dist",
-    "build": "rollup -c",
-    "dev": "npm run prebuild && rollup -c --watch"
+    "build": "rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
+    "dev": "npm run prebuild && npm run build -- --watch"
   },
   "bin": {
-    "multi-static-dev": "_OLD/dev.js",
-    "multi-static-build": "_OLD/build.js"
+    "multi-static": "dist/cli.js"
   },
   "dependencies": {
     "express": "4.17.1",
@@ -26,6 +25,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-typescript": "^8.4.0",
     "esbuild": "^0.15.6",
     "rimraf": "^3.0.2",
     "rollup": "^2.79.0",

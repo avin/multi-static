@@ -1,6 +1,7 @@
 import dts from 'rollup-plugin-dts';
 import esbuild from 'rollup-plugin-esbuild';
 import resolve from '@rollup/plugin-node-resolve';
+import { RollupOptions } from 'rollup';
 
 const bundle = (lib, config) => ({
   ...config,
@@ -8,19 +9,19 @@ const bundle = (lib, config) => ({
   external: [/node_modules/],
 });
 
-const result: any[] = [];
+const result: RollupOptions[] = [];
 for (const lib of ['main', 'cli']) {
   result.push(
     bundle(lib, {
       plugins: [resolve(), esbuild()],
       output: [
         {
-          file: `${lib}.cjs`,
+          file: `dist/${lib}.cjs`,
           format: 'cjs',
           sourcemap: true,
         },
         {
-          file: `${lib}.mjs`,
+          file: `dist/${lib}.mjs`,
           format: 'es',
           sourcemap: true,
         },
@@ -31,7 +32,7 @@ for (const lib of ['main', 'cli']) {
     bundle(lib, {
       plugins: [dts()],
       output: {
-        file: `${lib}.d.ts`,
+        file: `dist/${lib}.d.ts`,
         format: 'es',
       },
     }),
