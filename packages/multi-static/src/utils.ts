@@ -6,7 +6,7 @@ import merge from 'lodash/merge';
 import escapeRegExp from 'lodash/escapeRegExp';
 import fs from 'fs-extra';
 import { DevTransformer, FileBuildProcessingParams, MultiStaticConfig } from './types';
-import { transformSync as esbuildTransformSync } from 'esbuild';
+import { transformSync as esbuildTransformSync, buildSync } from 'esbuild';
 import vm from 'vm';
 
 export const defaultDevTransformerReader: DevTransformer['reader'] = ({ filePath }) => {
@@ -22,7 +22,7 @@ export const defaultDevTransformerMakeResponse: DevTransformer['makeResponse'] =
   res.send(content);
 };
 
-export const defaultDevTransformer: Pick<DevTransformer, 'reader' | 'makeResponse'> = {
+export const defaultDevTransformer: Partial<DevTransformer> = {
   reader: defaultDevTransformerReader,
   makeResponse: defaultDevTransformerMakeResponse,
 };
@@ -67,16 +67,21 @@ export const extendedRequire = <T>(id: string): T => {
   const moduleContent = fs.readFileSync(modulePath, 'utf-8');
   const { code } = esbuildTransformSync(moduleContent, {
     format: 'cjs',
+    platform: 'node',
+    loader: 'ts',
+    target: `node${process.versions.node}`,
+    tsconfigRaw: '{"compilerOptions":{"useDefineForClassFields":true}}',
   });
   const module: { exports?: { default?: unknown } } = {
     exports: {},
   };
-  const context = { module, require };
-  vm.createContext(context);
+  // const context = { module, require };
+  // vm.createContext(context);
   const wrappedSrc = `(function(module, exports, require) {${code}})(module, module.exports, require);`;
-  const script = new vm.Script(wrappedSrc, { filename: modulePath, displayErrors: false });
+  // const script = new vm.Script(wrappedSrc, { filename: modulePath, displayErrors: false });
   try {
-    script.runInContext(context);
+    // script.runInContext(context);
+    eval(wrappedSrc);
   } catch (e) {
     console.error(e);
     process.exit(1);

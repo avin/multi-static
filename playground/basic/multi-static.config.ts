@@ -1,4 +1,6 @@
+import fs from 'fs';
 import { defineConfig } from 'multi-static';
+import sass from 'sass';
 
 const config = defineConfig({
   mapping: [['./static', '/']],
@@ -15,22 +17,42 @@ const config = defineConfig({
         },
       ],
     },
-  ],
-
-  buildTransformers: [
     {
-      test: /\.scss?$/,
-      reader: ({ destinationPath, filePath, ctx }) => {},
+      test: /\.css$/,
+      reader: ({ filePath, ctx }) => {
+        const sassFilePath = filePath.replace(/\.css$/, '.scss');
+        if (!fs.existsSync(sassFilePath)) {
+          return null;
+        }
+        ctx.sassFilePath = sassFilePath;
+        return true;
+      },
       processors: [
-        ({ content, destinationPath, filePath, ctx }) => {
-          // транформируем content
+        ({ content, filePath, ctx }) => {
+          const { sassFilePath } = ctx;
+          const sassResult = sass.compile(sassFilePath as string, {
+            loadPaths: [process.cwd()],
+          });
+          return sassResult.css;
         },
       ],
-      writer: ({ content, destinationPath, filePath, ctx }) => {
-        // записываем файл
-      },
     },
   ],
+
+  // buildTransformers: [
+  //   {
+  //     test: /\.scss?$/,
+  //     reader: ({ destinationPath, filePath, ctx }) => {},
+  //     processors: [
+  //       ({ content, destinationPath, filePath, ctx }) => {
+  //         // транформируем content
+  //       },
+  //     ],
+  //     writer: ({ content, destinationPath, filePath, ctx }) => {
+  //       // записываем файл
+  //     },
+  //   },
+  // ],
 });
 
 export default config;

@@ -28,19 +28,19 @@ export type FileBuildProcessingParams = {
 
 export interface DevTransformer {
   test: RegExp;
-  reader: (params: { reqPath: string; filePath: string; ctx: object }) => Promise<string | null> | string | null;
+  reader: (params: { reqPath: string; filePath: string; ctx: Record<string, unknown> }) => Promise<any> | any;
   processors: ((params: {
-    content: string;
+    content: any;
     reqPath: string;
     filePath: string;
-    ctx: object;
+    ctx: Record<string, unknown>;
   }) => Promise<string> | string)[];
   makeResponse: (params: {
-    content: string;
+    content: any;
     reqPath: string;
     filePath: string;
     res: Response;
-    ctx: object;
+    ctx: Record<string, unknown>;
   }) => Promise<void> | void;
 }
 

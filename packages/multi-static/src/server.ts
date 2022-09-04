@@ -5,6 +5,7 @@ import path from 'path';
 import https from 'https';
 import http from 'http';
 import {
+  defaultDevTransformer,
   defaultDevTransformerMakeResponse,
   defaultDevTransformerReader,
   getGlobBasePath,
@@ -86,7 +87,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
           const filePath = fileSrc;
           console.log({ filePath: fileSrc, reqPath });
-          for (const devTransformer of config.devTransformers) {
+          for (const devTransformer of [...config.devTransformers, defaultDevTransformer]) {
             // 1) Test
             if (devTransformer.test && !devTransformer.test.test(reqPath)) {
               continue;
@@ -111,7 +112,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
             }
 
             // 4) Response
-            const makeResponse = devTransformer.reader || defaultDevTransformerMakeResponse;
+            const makeResponse = devTransformer.makeResponse || defaultDevTransformerMakeResponse;
             await makeResponse({ content, reqPath, filePath, res, ctx });
 
             return;
