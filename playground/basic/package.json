@@ -1,0 +1,13 @@
+{
+  "name": "basic",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "multi-static dev",
+    "build": "multi-static build"
+  },
+  "dependencies": {},
+  "keywords": [],
+  "author": "a.vinogradov",
+  "license": "ISC"
+}

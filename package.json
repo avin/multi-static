@@ -2,7 +2,8 @@
   "name": "multi-static-monorepo",
   "private": true,
   "workspaces": [
-    "packages/multi-static"
+    "packages/*",
+    "playground/*"
   ],
   "scripts": {
     "postinstall": "husky install",
@@ -26,6 +27,6 @@
   },
   "volta": {
     "node": "16.13.2",
-    "npm": "8.1.2"
+    "yarn": "1.22.18"
   }
 }
