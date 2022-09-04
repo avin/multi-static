@@ -4,6 +4,7 @@ import glob from 'glob';
 import _, { noop } from 'lodash';
 import fs from 'fs-extra';
 import { FileBuildProcessingParams, FileDevProcessingParams, MultiStaticConfig } from './types';
+import { transformSync as esbuildTransformSync } from 'esbuild';
 
 export const defaultFileDevProcessing = ({ fileSrc, res }: FileDevProcessingParams): boolean => {
   // Reading the contents of the file
@@ -59,12 +60,31 @@ export const defaultConfig: MultiStaticConfig = {
   optionsFileName: '_options.js',
 };
 
+export const extendedRequire = <T>(id: string): T => {
+  const modulePath = require.resolve(id);
+  const configContent = fs.readFileSync(modulePath, 'utf-8');
+  const { code } = esbuildTransformSync(configContent, {
+    format: 'cjs',
+  });
+  const module: { exports?: { default?: unknown } } = {
+    exports: {},
+  };
+  const wrappedSrc = `(function(module, exports, require) {${code}})(module, module.exports, require);`;
+  eval(wrappedSrc);
+  if (module.exports?.default) {
+    return module.exports.default as T;
+  }
+  return module.exports as T;
+};
+
 // Read user config
 export const readConfig = (userConfigSrc: string) => {
-  const config = _.cloneDeep(defaultConfig);
+  const config: MultiStaticConfig = _.cloneDeep(defaultConfig);
 
   try {
-    const userConfig = require(path.join(process.cwd(), userConfigSrc)) as MultiStaticConfig;
+    const configPath = path.join(process.cwd(), userConfigSrc);
+
+    const userConfig = extendedRequire<Partial<MultiStaticConfig>>(configPath) as MultiStaticConfig;
     _.merge(config, userConfig);
   } catch (e) {
     console.error('Wrong config');
@@ -87,11 +107,6 @@ export const getFilesList = (dir: string, pathList: string[] = []) => {
   }
 
   return pathList;
-};
-
-export const requireUncached = <T>(module: string) => {
-  delete require.cache[require.resolve(module)];
-  return require(module) as T;
 };
 
 // Mix content of _options.js files to pageOptions of current config
@@ -129,7 +144,7 @@ export const mixInCustomPageOptions = ({
         const fileSrc = path.join(process.cwd(), staticPath, cleanServeLocation);
 
         try {
-          const newPageOptions = requireUncached<Record<string, unknown>>(fileSrc);
+          const newPageOptions = extendedRequire<Record<string, unknown>>(fileSrc);
           newCustomOptions = _.merge({}, newPageOptions, newCustomOptions);
         } catch (e) {
           //
