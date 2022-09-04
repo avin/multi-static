@@ -3,14 +3,14 @@ import esbuild from 'rollup-plugin-esbuild';
 import resolve from '@rollup/plugin-node-resolve';
 import { RollupOptions } from 'rollup';
 
-const bundle = (lib, config) => ({
+const bundle = (lib: string, config: RollupOptions): RollupOptions => ({
   ...config,
   input: `src/${lib}.ts`,
   external: [/node_modules/],
 });
 
 const result: RollupOptions[] = [];
-for (const lib of ['main', 'cli']) {
+for (const lib of ['index', 'cli']) {
   result.push(
     bundle(lib, {
       plugins: [resolve(), esbuild()],
