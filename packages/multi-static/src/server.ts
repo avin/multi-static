@@ -1,6 +1,6 @@
 import { MultiStaticConfig } from './types';
 import express from 'express';
-import _ from 'lodash';
+import escapeRegExp from 'lodash/escapeRegExp';
 import path from 'path';
 import https from 'https';
 import http from 'http';
@@ -18,7 +18,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
   await config.beforeDevStart(app);
 
   // Хедеры пресекающие работу кеша в браузере
-  app.use((_req, res, next) => {
+  app.use((req, res, next) => {
     res.setHeader('Surrogate-Control', 'no-store');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -43,7 +43,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
       // Если роут попадает под условие serveLocation
       if (req.path.startsWith(serveLocation)) {
-        const cleanServeLocation = req.path.replace(new RegExp(`^${_.escapeRegExp(serveLocation)}`, ''), '');
+        const cleanServeLocation = req.path.replace(new RegExp(`^${escapeRegExp(serveLocation)}`, ''), '');
 
         let fileSrc: string | undefined;
 
@@ -53,7 +53,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
           filePaths.forEach((filePath) => {
             // Часть пути до файла в основе которой магия glob
-            const globFilePart = filePath.replace(new RegExp(`^${_.escapeRegExp(getGlobBasePath(staticPath))}`), '');
+            const globFilePart = filePath.replace(new RegExp(`^${escapeRegExp(getGlobBasePath(staticPath))}`), '');
 
             if (globFilePart === cleanServeLocation) {
               fileSrc = path.join(process.cwd(), filePath);

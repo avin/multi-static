@@ -1,7 +1,9 @@
 import path from 'path';
 import mime from 'mime-types';
 import glob from 'glob';
-import _, { noop } from 'lodash';
+import noop from 'lodash/noop';
+import merge from 'lodash/merge';
+import escapeRegExp from 'lodash/escapeRegExp';
 import fs from 'fs-extra';
 import { FileBuildProcessingParams, FileDevProcessingParams, MultiStaticConfig } from './types';
 import { transformSync as esbuildTransformSync } from 'esbuild';
@@ -79,13 +81,13 @@ export const extendedRequire = <T>(id: string): T => {
 
 // Read user config
 export const readConfig = (userConfigSrc: string) => {
-  const config: MultiStaticConfig = _.cloneDeep(defaultConfig);
+  const config: MultiStaticConfig = merge({}, defaultConfig);
 
   try {
     const configPath = path.join(process.cwd(), userConfigSrc);
 
     const userConfig = extendedRequire<Partial<MultiStaticConfig>>(configPath) as MultiStaticConfig;
-    _.merge(config, userConfig);
+    merge(config, userConfig);
   } catch (e) {
     console.error('Wrong config');
     console.error(e);
@@ -138,14 +140,14 @@ export const mixInCustomPageOptions = ({
 
       // If the route falls under the mapping record
       if (optionsPath.startsWith(serveLocation)) {
-        const cleanServeLocation = optionsPath.replace(new RegExp(`^${_.escapeRegExp(serveLocation)}`, ''), '');
+        const cleanServeLocation = optionsPath.replace(new RegExp(`^${escapeRegExp(serveLocation)}`, ''), '');
 
         // Composing the file name
         const fileSrc = path.join(process.cwd(), staticPath, cleanServeLocation);
 
         try {
           const newPageOptions = extendedRequire<Record<string, unknown>>(fileSrc);
-          newCustomOptions = _.merge({}, newPageOptions, newCustomOptions);
+          newCustomOptions = merge({}, newPageOptions, newCustomOptions);
         } catch (e) {
           //
         }
@@ -154,7 +156,7 @@ export const mixInCustomPageOptions = ({
 
     pathArr.pop();
   }
-  config.customOptions = _.merge({}, originalCustomOptions, newCustomOptions);
+  config.customOptions = merge({}, originalCustomOptions, newCustomOptions);
 };
 
 export const getGlobBasePath = (globString: string, pathSep = '/') => {

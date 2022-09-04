@@ -2,7 +2,7 @@ import { MultiStaticConfig } from './types';
 import { getFilesList, getGlobBasePath, mixInCustomPageOptions } from './utils';
 import glob from 'glob';
 import fs from 'fs-extra';
-import _ from 'lodash';
+import escapeRegExp from 'lodash/escapeRegExp';
 import path from 'path';
 
 export const build = async (config: MultiStaticConfig) => {
@@ -44,8 +44,8 @@ export const build = async (config: MultiStaticConfig) => {
       const reqPath =
         serveLocation +
         fileSrc
-          .replace(new RegExp(`^${_.escapeRegExp(staticFilesBasePath)}`, ''), '')
-          .replace(new RegExp(_.escapeRegExp(path.sep), 'g'), '/');
+          .replace(new RegExp(`^${escapeRegExp(staticFilesBasePath)}`, ''), '')
+          .replace(new RegExp(escapeRegExp(path.sep), 'g'), '/');
 
       mixInCustomPageOptions({
         reqPath,
@@ -57,7 +57,7 @@ export const build = async (config: MultiStaticConfig) => {
 
       // ---------------------------
 
-      const destinationFileSrc = fileSrc.replace(new RegExp(`^${_.escapeRegExp(staticFilesBasePath)}`), buildPath);
+      const destinationFileSrc = fileSrc.replace(new RegExp(`^${escapeRegExp(staticFilesBasePath)}`), buildPath);
 
       await config.fileBuildProcessing({ fileSrc, destinationFileSrc });
     }
