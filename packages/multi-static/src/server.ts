@@ -99,7 +99,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
             const ctx = {};
 
             // 2) Read
-            let content;
+            let content: unknown;
             try {
               const reader = devTransformer.reader || defaultReader;
               content = await reader({ file, mode, ctx });

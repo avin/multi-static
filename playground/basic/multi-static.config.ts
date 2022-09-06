@@ -3,11 +3,11 @@ import { defineConfig, Processor } from 'multi-static';
 import sass from 'sass';
 
 const htmlProcessors: Processor[] = [
-  ({ content }: { content: string }) => {
-    return content.replace(/world/g, 'TRANSED');
+  ({ content }) => {
+    return (content as string).replace(/world/g, 'TRANSED');
   },
-  ({ content }: { content: string }) => {
-    return content.replace(/TRANSED/g, 'MORE_TRANSED');
+  ({ content }) => {
+    return (content as string).replace(/TRANSED/g, 'MORE_TRANSED');
   },
 ];
 

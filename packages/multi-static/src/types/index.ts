@@ -8,7 +8,7 @@ export interface File {
 export type TransformerMode = 'dev' | 'build';
 
 export type Processor = (params: {
-  content: any;
+  content: unknown;
   file: File;
   mode: TransformerMode;
   ctx: Record<string, unknown>;
@@ -18,17 +18,17 @@ export type Reader = (params: {
   file: File;
   mode: TransformerMode;
   ctx: Record<string, unknown>;
-}) => Promise<any | null> | any | null;
+}) => Promise<unknown | null> | unknown | null;
 
 export type Writer = (params: {
-  content: any;
+  content: unknown;
   file: File;
   mode: TransformerMode;
   ctx: Record<string, unknown>;
 }) => Promise<void> | void;
 
 export type ResponseMaker = (params: {
-  content: any;
+  content: unknown;
   file: File;
   res: Response;
   mode: TransformerMode;

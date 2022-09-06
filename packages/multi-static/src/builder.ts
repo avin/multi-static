@@ -80,7 +80,7 @@ export const build = async (config: MultiStaticConfig) => {
         const ctx = {};
 
         // 2) Read
-        let content;
+        let content: unknown;
         try {
           const reader = buildTransformer.reader || defaultReader;
           content = await reader({ file, mode, ctx });
