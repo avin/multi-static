@@ -97,8 +97,8 @@ export const build = async (config: MultiStaticConfig) => {
         }
 
         // 4) Response
-        const makeResponse = buildTransformer.writer || defaultWriter;
-        await makeResponse({ content, file, mode, ctx });
+        const writer = buildTransformer.writer || defaultWriter;
+        await writer({ content, file, mode, ctx });
 
         break;
       }

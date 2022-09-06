@@ -13,6 +13,7 @@ export const defaultReader: Reader = ({ file }) => {
 };
 
 export const defaultWriter: Writer = ({ file, content }) => {
+  console.log('==', file.dstPath);
   fs.ensureFileSync(file.dstPath);
   fs.writeFileSync(file.dstPath, content);
 };

@@ -12,7 +12,7 @@ const htmlProcessors: Processor[] = [
 ];
 
 const scssProcessors: Processor[] = [
-  ({ content, file, ctx }) => {
+  ({ file }) => {
     const sassResult = sass.compile(file.srcPath, {
       loadPaths: [process.cwd()],
     });
@@ -30,7 +30,7 @@ const config = defineConfig({
     },
     {
       test: /\.css$/,
-      reader: ({ file, ctx }) => {
+      reader: ({ file }) => {
         const sassFilePath = file.srcPath.replace(/\.css$/, '.scss');
         if (!fs.existsSync(sassFilePath)) {
           return null;
@@ -49,8 +49,8 @@ const config = defineConfig({
     },
     {
       test: /\.scss$/,
-      reader: ({ file, ctx }) => {
-        file.dstPath = file.srcPath.replace(/\.scss$/, '.css');
+      reader: ({ file }) => {
+        file.dstPath = file.dstPath.replace(/\.scss$/, '.css');
         return true;
       },
       processors: scssProcessors,
