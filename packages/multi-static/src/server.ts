@@ -85,11 +85,14 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
         if (fileSrc) {
           // const success = await config.fileDevProcessing({ fileSrc, req, res, next });
 
-          const filePath = fileSrc;
-          console.log({ filePath: fileSrc, reqPath });
+          const file = {
+            srcPath: fileSrc,
+            dstPath: reqPath,
+          };
+
           for (const devTransformer of [...config.devTransformers, defaultDevTransformer]) {
             // 1) Test
-            if (devTransformer.test && !devTransformer.test.test(reqPath)) {
+            if (devTransformer.test && !devTransformer.test.test(file.dstPath)) {
               continue;
             }
             const ctx = {};
@@ -98,7 +101,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
             let content;
             try {
               const reader = devTransformer.reader || defaultReader;
-              content = await reader({ reqPath, filePath, ctx });
+              content = await reader({ file, ctx });
               if (content === null) {
                 continue;
               }
@@ -108,12 +111,12 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
             // 3) Process
             for (const processor of devTransformer.processors || []) {
-              content = await processor({ content, reqPath, filePath, ctx });
+              content = await processor({ content, file, ctx });
             }
 
             // 4) Response
             const makeResponse = devTransformer.makeResponse || defaultDevTransformerMakeResponse;
-            await makeResponse({ content, reqPath, filePath, res, ctx });
+            await makeResponse({ content, file, res, ctx });
 
             return;
           }

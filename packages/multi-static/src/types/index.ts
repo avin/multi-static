@@ -1,18 +1,5 @@
 import { Express, Request, Response, NextFunction } from 'express';
 
-export type FileDevProcessingParams = {
-  fileSrc: string;
-  req?: Request;
-  res: Response;
-  next?: NextFunction;
-};
-
-export type FileBuildProcessingParams = {
-  fileSrc: string;
-  destinationFileSrc: string;
-  modifyData?: <T>(data: T, fileSrc: string) => T;
-};
-
 // export type DevTransformer = {
 //   test?: RegExp;
 //   reader: (params: { reqPath: string; filePath: string; ctx: TContext }) => Promise<string | null> | string | null;
@@ -26,29 +13,35 @@ export type FileBuildProcessingParams = {
 //   }) => Promise<void> | void;
 // };
 
+export interface File {
+  srcPath: string;
+  dstPath: string;
+}
+
+export type Processor = (params: {
+  content: any;
+  file: File;
+  ctx: Record<string, unknown>;
+}) => Promise<string> | string;
+
 export interface DevTransformer {
   test: RegExp;
-  reader: (params: {
-    reqPath: string;
-    filePath: string;
-    ctx: Record<string, unknown>;
-  }) => Promise<any | null> | any | null;
-  processors: ((params: {
-    content: any;
-    reqPath: string;
-    filePath: string;
-    ctx: Record<string, unknown>;
-  }) => Promise<string> | string)[];
+  reader: (params: { file: File; ctx: Record<string, unknown> }) => Promise<any | null> | any | null;
+  processors: Processor[];
   makeResponse: (params: {
     content: any;
-    reqPath: string;
-    filePath: string;
+    file: File;
     res: Response;
     ctx: Record<string, unknown>;
   }) => Promise<void> | void;
 }
 
-export type BuildTransformer = any;
+export interface BuildTransformer {
+  test: RegExp;
+  reader: (params: { file: File; ctx: Record<string, unknown> }) => Promise<any | null> | any | null;
+  processors: Processor[];
+  writer: (params: { content: any; file: File; ctx: Record<string, unknown> }) => Promise<void> | void;
+}
 
 export interface MultiStaticConfig {
   /** Настройки web-сервера в dev режиме */
@@ -63,12 +56,6 @@ export interface MultiStaticConfig {
 
   /** Маппинг исходных файлов с тем как они должны быть расположены при сборке*/
   mapping: [string, string][];
-
-  /** Функция обработки файла в dev-режиме */
-  // fileDevProcessing: (params: FileDevProcessingParams) => Promise<boolean> | boolean;
-
-  /** Функция обработки файла в build-режиме */
-  // fileBuildProcessing: (params: FileBuildProcessingParams) => Promise<void> | void;
 
   /** ?? */
   mappingDevLocationRewrite: (dst: string) => string;
@@ -96,5 +83,5 @@ export interface MultiStaticConfig {
   devTransformers: Partial<DevTransformer>[];
 
   // TODO
-  buildTransformers?: any;
+  buildTransformers: Partial<BuildTransformer>[];
 }

@@ -69,13 +69,15 @@ export const build = async (config: MultiStaticConfig) => {
       const destinationFileSrc = fileSrc.replace(new RegExp(`^${escapeRegExp(staticFilesBasePath)}`), buildPath);
 
       // await config.fileBuildProcessing({ fileSrc, destinationFileSrc });
-      const filePath = fileSrc;
-      const dstPath = destinationFileSrc;
-      console.log({ filePath, dstPath });
+
+      const file = {
+        srcPath: fileSrc,
+        dstPath: destinationFileSrc,
+      };
 
       for (const buildTransformer of [...config.buildTransformers, defaultBuildTransformer]) {
         // 1) Test
-        if (buildTransformer.test && !buildTransformer.test.test(filePath)) {
+        if (buildTransformer.test && !buildTransformer.test.test(file.srcPath)) {
           continue;
         }
         const ctx = {};
@@ -84,7 +86,7 @@ export const build = async (config: MultiStaticConfig) => {
         let content;
         try {
           const reader = buildTransformer.reader || defaultReader;
-          content = await reader({ dstPath, filePath, ctx });
+          content = await reader({ file, ctx });
           if (content === null) {
             continue;
           }
@@ -94,12 +96,12 @@ export const build = async (config: MultiStaticConfig) => {
 
         // 3) Process
         for (const processor of buildTransformer.processors || []) {
-          content = await processor({ content, dstPath, filePath, ctx });
+          content = await processor({ content, file, ctx });
         }
 
         // 4) Response
         const makeResponse = buildTransformer.writer || defaultWriter;
-        await makeResponse({ content, dstPath, filePath, ctx });
+        await makeResponse({ content, file, ctx });
 
         break;
       }

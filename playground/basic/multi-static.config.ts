@@ -19,18 +19,17 @@ const config = defineConfig({
     },
     {
       test: /\.css$/,
-      reader: ({ filePath, ctx }) => {
-        const sassFilePath = filePath.replace(/\.css$/, '.scss');
+      reader: ({ file, ctx }) => {
+        const sassFilePath = file.srcPath.replace(/\.css$/, '.scss');
         if (!fs.existsSync(sassFilePath)) {
           return null;
         }
-        ctx.sassFilePath = sassFilePath;
+        file.srcPath = sassFilePath;
         return true;
       },
       processors: [
-        ({ content, filePath, ctx }) => {
-          const { sassFilePath } = ctx;
-          const sassResult = sass.compile(sassFilePath as string, {
+        ({ content, file, ctx }) => {
+          const sassResult = sass.compile(file.srcPath as string, {
             loadPaths: [process.cwd()],
           });
           return sassResult.css;

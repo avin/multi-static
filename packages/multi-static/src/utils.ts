@@ -5,20 +5,20 @@ import noop from 'lodash/noop';
 import merge from 'lodash/merge';
 import escapeRegExp from 'lodash/escapeRegExp';
 import fs from 'fs-extra';
-import { BuildTransformer, DevTransformer, FileBuildProcessingParams, MultiStaticConfig } from './types';
+import { BuildTransformer, DevTransformer, File, MultiStaticConfig, Processor } from './types';
 import { transformSync as esbuildTransformSync } from 'esbuild';
 
-export const defaultReader: DevTransformer['reader'] = ({ filePath }) => {
-  return fs.readFileSync(filePath, 'utf-8');
+export const defaultReader: DevTransformer['reader'] = ({ file }) => {
+  return fs.readFileSync(file.srcPath, 'utf-8');
 };
 
-export const defaultWriter: BuildTransformer['writer'] = ({ dstPath, content }) => {
-  fs.ensureFileSync(dstPath);
-  fs.writeFileSync(dstPath, content);
+export const defaultWriter: BuildTransformer['writer'] = ({ file, content }) => {
+  fs.ensureFileSync(file.dstPath);
+  fs.writeFileSync(file.dstPath, content);
 };
 
-export const defaultDevTransformerMakeResponse: DevTransformer['makeResponse'] = ({ content, reqPath, res }) => {
-  const mimeType = mime.lookup(reqPath);
+export const defaultDevTransformerMakeResponse: DevTransformer['makeResponse'] = ({ content, file, res }) => {
+  const mimeType = mime.lookup(file.dstPath);
   if (mimeType) {
     res.setHeader('Content-Type', mimeType);
   }
@@ -36,16 +36,6 @@ export const defaultBuildTransformer: Partial<BuildTransformer> = {
   writer: defaultWriter,
 };
 
-export const defaultFileBuildProcessing = ({ fileSrc, destinationFileSrc }: FileBuildProcessingParams) => {
-  // Only if the file is not yet at the destination
-  if (!fs.pathExistsSync(destinationFileSrc) && fs.pathExistsSync(fileSrc)) {
-    const data = fs.readFileSync(fileSrc);
-
-    fs.ensureFileSync(destinationFileSrc);
-    fs.writeFileSync(destinationFileSrc, data);
-  }
-};
-
 // Default config
 export const defaultConfig: MultiStaticConfig = {
   http: {
@@ -56,6 +46,7 @@ export const defaultConfig: MultiStaticConfig = {
   buildPath: path.join(process.cwd(), 'build'),
   mapping: [],
   devTransformers: [],
+  buildTransformers: [],
   // fileDevProcessing: defaultFileDevProcessing,
   // fileBuildProcessing: defaultFileBuildProcessing,
   mappingDevLocationRewrite: (dst) => dst,
