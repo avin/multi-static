@@ -1,8 +1,6 @@
 import { MultiStaticConfig } from './types';
 import {
   defaultBuildTransformer,
-  defaultDevTransformer,
-  defaultDevTransformerMakeResponse,
   defaultReader,
   defaultWriter,
   getFilesList,
@@ -48,6 +46,8 @@ export const build = async (config: MultiStaticConfig) => {
         }
       }
     })();
+
+    console.log('::', files);
 
     for (const fileSrc of files) {
       const reqPath =
@@ -101,7 +101,7 @@ export const build = async (config: MultiStaticConfig) => {
         const makeResponse = buildTransformer.writer || defaultWriter;
         await makeResponse({ content, dstPath, filePath, ctx });
 
-        return;
+        break;
       }
     }
   }

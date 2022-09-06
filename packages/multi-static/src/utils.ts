@@ -33,7 +33,7 @@ export const defaultDevTransformer: Partial<DevTransformer> = {
 
 export const defaultBuildTransformer: Partial<BuildTransformer> = {
   reader: defaultReader,
-  makeResponse: defaultDevTransformerMakeResponse,
+  writer: defaultWriter,
 };
 
 export const defaultFileBuildProcessing = ({ fileSrc, destinationFileSrc }: FileBuildProcessingParams) => {
