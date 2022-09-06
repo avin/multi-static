@@ -29,7 +29,7 @@ const config = defineConfig({
       },
       processors: [
         ({ content, file, ctx }) => {
-          const sassResult = sass.compile(file.srcPath as string, {
+          const sassResult = sass.compile(file.srcPath, {
             loadPaths: [process.cwd()],
           });
           return sassResult.css;
@@ -49,17 +49,21 @@ const config = defineConfig({
           return content.replace(/TRANSED/g, 'MORE_TRANSED');
         },
       ],
-
-      // test: /\.scss?$/,
-      // reader: ({ dstPath, filePath, ctx }) => {},
-      // processors: [
-      //   ({ content, dstPath, filePath, ctx }) => {
-      //     // транформируем content
-      //   },
-      // ],
-      // writer: ({ content, dstPath, filePath, ctx }) => {
-      //   // записываем файл
-      // },
+    },
+    {
+      test: /\.scss$/,
+      reader: ({ file, ctx }) => {
+        file.dstPath = file.srcPath.replace(/\.scss$/, '.css');
+        return true;
+      },
+      processors: [
+        ({ content, file, ctx }) => {
+          const sassResult = sass.compile(file.srcPath, {
+            loadPaths: [process.cwd()],
+          });
+          return sassResult.css;
+        },
+      ],
     },
   ],
 });

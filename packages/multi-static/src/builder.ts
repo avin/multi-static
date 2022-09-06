@@ -47,8 +47,6 @@ export const build = async (config: MultiStaticConfig) => {
       }
     })();
 
-    console.log('::', files);
-
     for (const fileSrc of files) {
       const reqPath =
         serveLocation +
@@ -67,8 +65,6 @@ export const build = async (config: MultiStaticConfig) => {
       // ---------------------------
 
       const destinationFileSrc = fileSrc.replace(new RegExp(`^${escapeRegExp(staticFilesBasePath)}`), buildPath);
-
-      // await config.fileBuildProcessing({ fileSrc, destinationFileSrc });
 
       const file = {
         srcPath: fileSrc,
