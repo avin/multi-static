@@ -1,5 +1,14 @@
 import { MultiStaticConfig } from './types';
-import { getFilesList, getGlobBasePath, mixInCustomPageOptions } from './utils';
+import {
+  defaultBuildTransformer,
+  defaultDevTransformer,
+  defaultDevTransformerMakeResponse,
+  defaultReader,
+  defaultWriter,
+  getFilesList,
+  getGlobBasePath,
+  mixInCustomPageOptions,
+} from './utils';
 import glob from 'glob';
 import fs from 'fs-extra';
 import escapeRegExp from 'lodash/escapeRegExp';
@@ -59,7 +68,41 @@ export const build = async (config: MultiStaticConfig) => {
 
       const destinationFileSrc = fileSrc.replace(new RegExp(`^${escapeRegExp(staticFilesBasePath)}`), buildPath);
 
-      await config.fileBuildProcessing({ fileSrc, destinationFileSrc });
+      // await config.fileBuildProcessing({ fileSrc, destinationFileSrc });
+      const filePath = fileSrc;
+      const dstPath = destinationFileSrc;
+      console.log({ filePath, dstPath });
+
+      for (const buildTransformer of [...config.buildTransformers, defaultBuildTransformer]) {
+        // 1) Test
+        if (buildTransformer.test && !buildTransformer.test.test(filePath)) {
+          continue;
+        }
+        const ctx = {};
+
+        // 2) Read
+        let content;
+        try {
+          const reader = buildTransformer.reader || defaultReader;
+          content = await reader({ dstPath, filePath, ctx });
+          if (content === null) {
+            continue;
+          }
+        } catch (e) {
+          continue;
+        }
+
+        // 3) Process
+        for (const processor of buildTransformer.processors || []) {
+          content = await processor({ content, dstPath, filePath, ctx });
+        }
+
+        // 4) Response
+        const makeResponse = buildTransformer.writer || defaultWriter;
+        await makeResponse({ content, dstPath, filePath, ctx });
+
+        return;
+      }
     }
   }
 

@@ -39,20 +39,30 @@ const config = defineConfig({
     },
   ],
 
-  // buildTransformers: [
-  //   {
-  //     test: /\.scss?$/,
-  //     reader: ({ destinationPath, filePath, ctx }) => {},
-  //     processors: [
-  //       ({ content, destinationPath, filePath, ctx }) => {
-  //         // транформируем content
-  //       },
-  //     ],
-  //     writer: ({ content, destinationPath, filePath, ctx }) => {
-  //       // записываем файл
-  //     },
-  //   },
-  // ],
+  buildTransformers: [
+    {
+      test: /\.html$/,
+      processors: [
+        ({ content }: { content: string }) => {
+          return content.replace(/world/g, 'TRANSED');
+        },
+        ({ content }: { content: string }) => {
+          return content.replace(/TRANSED/g, 'MORE_TRANSED');
+        },
+      ],
+
+      // test: /\.scss?$/,
+      // reader: ({ dstPath, filePath, ctx }) => {},
+      // processors: [
+      //   ({ content, dstPath, filePath, ctx }) => {
+      //     // транформируем content
+      //   },
+      // ],
+      // writer: ({ content, dstPath, filePath, ctx }) => {
+      //   // записываем файл
+      // },
+    },
+  ],
 });
 
 export default config;

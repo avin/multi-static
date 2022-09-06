@@ -7,6 +7,13 @@ const bundle = (lib: string, config: RollupOptions): RollupOptions => ({
   ...config,
   input: `src/${lib}.ts`,
   external: [/node_modules/],
+  onwarn(warning, warn) {
+    // allow eval
+    if (warning.message.includes('Use of eval is strongly discouraged')) {
+      return;
+    }
+    warn(warning);
+  },
 });
 
 const result: RollupOptions[] = [];

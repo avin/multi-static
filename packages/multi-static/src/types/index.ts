@@ -48,6 +48,8 @@ export interface DevTransformer {
   }) => Promise<void> | void;
 }
 
+export type BuildTransformer = any;
+
 export interface MultiStaticConfig {
   /** Настройки web-сервера в dev режиме */
   http: {

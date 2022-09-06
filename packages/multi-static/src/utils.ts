@@ -5,12 +5,16 @@ import noop from 'lodash/noop';
 import merge from 'lodash/merge';
 import escapeRegExp from 'lodash/escapeRegExp';
 import fs from 'fs-extra';
-import { DevTransformer, FileBuildProcessingParams, MultiStaticConfig } from './types';
-import { transformSync as esbuildTransformSync, buildSync } from 'esbuild';
-import vm from 'vm';
+import { BuildTransformer, DevTransformer, FileBuildProcessingParams, MultiStaticConfig } from './types';
+import { transformSync as esbuildTransformSync } from 'esbuild';
 
-export const defaultDevTransformerReader: DevTransformer['reader'] = ({ filePath }) => {
+export const defaultReader: DevTransformer['reader'] = ({ filePath }) => {
   return fs.readFileSync(filePath, 'utf-8');
+};
+
+export const defaultWriter: BuildTransformer['writer'] = ({ dstPath, content }) => {
+  fs.ensureFileSync(dstPath);
+  fs.writeFileSync(dstPath, content);
 };
 
 export const defaultDevTransformerMakeResponse: DevTransformer['makeResponse'] = ({ content, reqPath, res }) => {
@@ -23,7 +27,12 @@ export const defaultDevTransformerMakeResponse: DevTransformer['makeResponse'] =
 };
 
 export const defaultDevTransformer: Partial<DevTransformer> = {
-  reader: defaultDevTransformerReader,
+  reader: defaultReader,
+  makeResponse: defaultDevTransformerMakeResponse,
+};
+
+export const defaultBuildTransformer: Partial<BuildTransformer> = {
+  reader: defaultReader,
   makeResponse: defaultDevTransformerMakeResponse,
 };
 
@@ -46,7 +55,7 @@ export const defaultConfig: MultiStaticConfig = {
   },
   buildPath: path.join(process.cwd(), 'build'),
   mapping: [],
-  devTransformers: [defaultDevTransformer],
+  devTransformers: [],
   // fileDevProcessing: defaultFileDevProcessing,
   // fileBuildProcessing: defaultFileBuildProcessing,
   mappingDevLocationRewrite: (dst) => dst,

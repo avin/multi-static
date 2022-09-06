@@ -7,7 +7,7 @@ import http from 'http';
 import {
   defaultDevTransformer,
   defaultDevTransformerMakeResponse,
-  defaultDevTransformerReader,
+  defaultReader,
   getGlobBasePath,
   mixInCustomPageOptions,
 } from './utils';
@@ -97,7 +97,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
             // 2) Read
             let content;
             try {
-              const reader = devTransformer.reader || defaultDevTransformerReader;
+              const reader = devTransformer.reader || defaultReader;
               content = await reader({ reqPath, filePath, ctx });
               if (content === null) {
                 continue;
