@@ -1,46 +1,52 @@
-import { Express, Request, Response, NextFunction } from 'express';
-
-// export type DevTransformer = {
-//   test?: RegExp;
-//   reader: (params: { reqPath: string; filePath: string; ctx: TContext }) => Promise<string | null> | string | null;
-//   processors?: ((params: { content: TContent; reqPath: string; filePath: string; ctx: TContext }) => TContent)[];
-//   makeResponse: (params: {
-//     content: TContent;
-//     reqPath: string;
-//     filePath: string;
-//     res: Response;
-//     ctx: TContext;
-//   }) => Promise<void> | void;
-// };
+import { Express, Response } from 'express';
 
 export interface File {
   srcPath: string;
   dstPath: string;
 }
 
+export type TransformerMode = 'dev' | 'build';
+
 export type Processor = (params: {
   content: any;
   file: File;
+  mode: TransformerMode;
   ctx: Record<string, unknown>;
 }) => Promise<string> | string;
 
+export type Reader = (params: {
+  file: File;
+  mode: TransformerMode;
+  ctx: Record<string, unknown>;
+}) => Promise<any | null> | any | null;
+
+export type Writer = (params: {
+  content: any;
+  file: File;
+  mode: TransformerMode;
+  ctx: Record<string, unknown>;
+}) => Promise<void> | void;
+
+export type ResponseMaker = (params: {
+  content: any;
+  file: File;
+  res: Response;
+  mode: TransformerMode;
+  ctx: Record<string, unknown>;
+}) => Promise<void> | void;
+
 export interface DevTransformer {
   test: RegExp;
-  reader: (params: { file: File; ctx: Record<string, unknown> }) => Promise<any | null> | any | null;
+  reader: Reader;
   processors: Processor[];
-  makeResponse: (params: {
-    content: any;
-    file: File;
-    res: Response;
-    ctx: Record<string, unknown>;
-  }) => Promise<void> | void;
+  responseMaker: ResponseMaker;
 }
 
 export interface BuildTransformer {
   test: RegExp;
-  reader: (params: { file: File; ctx: Record<string, unknown> }) => Promise<any | null> | any | null;
+  reader: Reader;
   processors: Processor[];
-  writer: (params: { content: any; file: File; ctx: Record<string, unknown> }) => Promise<void> | void;
+  writer: Writer;
 }
 
 export interface MultiStaticConfig {
@@ -79,9 +85,9 @@ export interface MultiStaticConfig {
    * Опции будут применимы ко всем файлам внутри этого каталога и к вложенным */
   optionsFileName: string;
 
-  // TODO
+  /** Трансформеры для dev-режима */
   devTransformers: Partial<DevTransformer>[];
 
-  // TODO
+  /** Трансформеры для build-режима */
   buildTransformers: Partial<BuildTransformer>[];
 }

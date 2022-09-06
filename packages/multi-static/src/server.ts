@@ -1,4 +1,4 @@
-import { MultiStaticConfig } from './types';
+import { MultiStaticConfig, TransformerMode } from './types';
 import express from 'express';
 import escapeRegExp from 'lodash/escapeRegExp';
 import path from 'path';
@@ -6,7 +6,7 @@ import https from 'https';
 import http from 'http';
 import {
   defaultDevTransformer,
-  defaultDevTransformerMakeResponse,
+  defaultDevTransformerResponseMaker,
   defaultReader,
   getGlobBasePath,
   mixInCustomPageOptions,
@@ -89,6 +89,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
             srcPath: fileSrc,
             dstPath: reqPath,
           };
+          const mode = 'dev';
 
           for (const devTransformer of [...config.devTransformers, defaultDevTransformer]) {
             // 1) Test
@@ -101,7 +102,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
             let content;
             try {
               const reader = devTransformer.reader || defaultReader;
-              content = await reader({ file, ctx });
+              content = await reader({ file, mode, ctx });
               if (content === null) {
                 continue;
               }
@@ -111,12 +112,12 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
             // 3) Process
             for (const processor of devTransformer.processors || []) {
-              content = await processor({ content, file, ctx });
+              content = await processor({ content, file, mode, ctx });
             }
 
             // 4) Response
-            const makeResponse = devTransformer.makeResponse || defaultDevTransformerMakeResponse;
-            await makeResponse({ content, file, res, ctx });
+            const responseMaker = devTransformer.responseMaker || defaultDevTransformerResponseMaker;
+            await responseMaker({ content, file, res, mode, ctx });
 
             return;
           }

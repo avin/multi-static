@@ -5,19 +5,19 @@ import noop from 'lodash/noop';
 import merge from 'lodash/merge';
 import escapeRegExp from 'lodash/escapeRegExp';
 import fs from 'fs-extra';
-import { BuildTransformer, DevTransformer, File, MultiStaticConfig, Processor } from './types';
+import { BuildTransformer, DevTransformer, MultiStaticConfig, Reader, ResponseMaker, Writer } from './types';
 import { transformSync as esbuildTransformSync } from 'esbuild';
 
-export const defaultReader: DevTransformer['reader'] = ({ file }) => {
+export const defaultReader: Reader = ({ file }) => {
   return fs.readFileSync(file.srcPath, 'utf-8');
 };
 
-export const defaultWriter: BuildTransformer['writer'] = ({ file, content }) => {
+export const defaultWriter: Writer = ({ file, content }) => {
   fs.ensureFileSync(file.dstPath);
   fs.writeFileSync(file.dstPath, content);
 };
 
-export const defaultDevTransformerMakeResponse: DevTransformer['makeResponse'] = ({ content, file, res }) => {
+export const defaultDevTransformerResponseMaker: ResponseMaker = ({ content, file, res }) => {
   const mimeType = mime.lookup(file.dstPath);
   if (mimeType) {
     res.setHeader('Content-Type', mimeType);
@@ -28,7 +28,7 @@ export const defaultDevTransformerMakeResponse: DevTransformer['makeResponse'] =
 
 export const defaultDevTransformer: Partial<DevTransformer> = {
   reader: defaultReader,
-  makeResponse: defaultDevTransformerMakeResponse,
+  responseMaker: defaultDevTransformerResponseMaker,
 };
 
 export const defaultBuildTransformer: Partial<BuildTransformer> = {

@@ -70,6 +70,7 @@ export const build = async (config: MultiStaticConfig) => {
         srcPath: fileSrc,
         dstPath: destinationFileSrc,
       };
+      const mode = 'build';
 
       for (const buildTransformer of [...config.buildTransformers, defaultBuildTransformer]) {
         // 1) Test
@@ -82,7 +83,7 @@ export const build = async (config: MultiStaticConfig) => {
         let content;
         try {
           const reader = buildTransformer.reader || defaultReader;
-          content = await reader({ file, ctx });
+          content = await reader({ file, mode, ctx });
           if (content === null) {
             continue;
           }
@@ -92,12 +93,12 @@ export const build = async (config: MultiStaticConfig) => {
 
         // 3) Process
         for (const processor of buildTransformer.processors || []) {
-          content = await processor({ content, file, ctx });
+          content = await processor({ content, file, mode, ctx });
         }
 
         // 4) Response
         const makeResponse = buildTransformer.writer || defaultWriter;
-        await makeResponse({ content, file, ctx });
+        await makeResponse({ content, file, mode, ctx });
 
         break;
       }

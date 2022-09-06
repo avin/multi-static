@@ -1,6 +1,24 @@
 import fs from 'fs';
-import { defineConfig } from 'multi-static';
+import { defineConfig, Processor } from 'multi-static';
 import sass from 'sass';
+
+const htmlProcessors: Processor[] = [
+  ({ content }: { content: string }) => {
+    return content.replace(/world/g, 'TRANSED');
+  },
+  ({ content }: { content: string }) => {
+    return content.replace(/TRANSED/g, 'MORE_TRANSED');
+  },
+];
+
+const scssProcessors: Processor[] = [
+  ({ content, file, ctx }) => {
+    const sassResult = sass.compile(file.srcPath, {
+      loadPaths: [process.cwd()],
+    });
+    return sassResult.css;
+  },
+];
 
 const config = defineConfig({
   mapping: [['./static', '/']],
@@ -8,14 +26,7 @@ const config = defineConfig({
   devTransformers: [
     {
       test: /\.html$/,
-      processors: [
-        ({ content }: { content: string }) => {
-          return content.replace(/world/g, 'TRANSED');
-        },
-        ({ content }: { content: string }) => {
-          return content.replace(/TRANSED/g, 'MORE_TRANSED');
-        },
-      ],
+      processors: htmlProcessors,
     },
     {
       test: /\.css$/,
@@ -27,28 +38,14 @@ const config = defineConfig({
         file.srcPath = sassFilePath;
         return true;
       },
-      processors: [
-        ({ content, file, ctx }) => {
-          const sassResult = sass.compile(file.srcPath, {
-            loadPaths: [process.cwd()],
-          });
-          return sassResult.css;
-        },
-      ],
+      processors: scssProcessors,
     },
   ],
 
   buildTransformers: [
     {
       test: /\.html$/,
-      processors: [
-        ({ content }: { content: string }) => {
-          return content.replace(/world/g, 'TRANSED');
-        },
-        ({ content }: { content: string }) => {
-          return content.replace(/TRANSED/g, 'MORE_TRANSED');
-        },
-      ],
+      processors: htmlProcessors,
     },
     {
       test: /\.scss$/,
@@ -56,14 +53,7 @@ const config = defineConfig({
         file.dstPath = file.srcPath.replace(/\.scss$/, '.css');
         return true;
       },
-      processors: [
-        ({ content, file, ctx }) => {
-          const sassResult = sass.compile(file.srcPath, {
-            loadPaths: [process.cwd()],
-          });
-          return sassResult.css;
-        },
-      ],
+      processors: scssProcessors,
     },
   ],
 });
