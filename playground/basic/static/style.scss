@@ -1,3 +1,6 @@
+// @process
+
 body {
-  background-color: lightgoldenrodyellow;
+  $color: lightgoldenrodyellow;
+  background-color: $color;
 }

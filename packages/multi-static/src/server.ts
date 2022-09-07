@@ -1,13 +1,14 @@
-import { MultiStaticConfig, TransformerMode } from './types';
+import { MultiStaticConfig } from './types';
 import express from 'express';
 import escapeRegExp from 'lodash/escapeRegExp';
 import path from 'path';
 import https from 'https';
 import http from 'http';
 import {
-  defaultDevTransformer,
-  defaultDevTransformerResponseMaker,
-  defaultReader,
+  defaultFileReader,
+  defaultSendResponse,
+  defaultTest,
+  defaultTransformer,
   getGlobBasePath,
   mixInCustomPageOptions,
 } from './utils';
@@ -85,39 +86,36 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
         if (fileSrc) {
           // const success = await config.fileDevProcessing({ fileSrc, req, res, next });
 
-          const file = {
-            srcPath: fileSrc,
-            dstPath: reqPath,
-          };
           const mode = 'dev';
 
-          for (const devTransformer of [...config.devTransformers, defaultDevTransformer]) {
-            // 1) Test
-            if (devTransformer.test && !devTransformer.test.test(file.dstPath)) {
-              continue;
-            }
+          for (const transformer of [...config.transformers, defaultTransformer]) {
+            const file = {
+              srcPath: fileSrc,
+              dstPath: reqPath,
+            };
+
             const ctx = {};
 
-            // 2) Read
-            let content: unknown;
-            try {
-              const reader = devTransformer.reader || defaultReader;
-              content = await reader({ file, mode, ctx });
-              if (content === null) {
-                continue;
-              }
-            } catch (e) {
+            // 0) Before test
+            if (transformer.beforeTest) {
+              await transformer.beforeTest({ file, mode, ctx });
+            }
+
+            // 1) Test
+            const test = transformer.test || defaultTest;
+            if (!(await test({ file, mode, ctx }))) {
               continue;
             }
 
             // 3) Process
-            for (const processor of devTransformer.processors || []) {
+            let content;
+            for (const processor of transformer.processors || [defaultFileReader]) {
               content = await processor({ content, file, mode, ctx });
             }
 
-            // 4) Response
-            const responseMaker = devTransformer.responseMaker || defaultDevTransformerResponseMaker;
-            await responseMaker({ content, file, res, mode, ctx });
+            // 4) Send response
+            const sendResponse = transformer.sendResponse || defaultSendResponse;
+            await sendResponse({ content, file, res, mode, ctx });
 
             return;
           }

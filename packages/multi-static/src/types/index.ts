@@ -1,52 +1,50 @@
 import { Express, Response } from 'express';
 
+export type MaybePromise<T> = T | Promise<T>;
+
 export interface File {
   srcPath: string;
   dstPath: string;
 }
 
+export type Ctx = Record<string, unknown>;
+
 export type TransformerMode = 'dev' | 'build';
 
 export type Processor = (params: {
-  content: unknown;
+  content: any;
   file: File;
   mode: TransformerMode;
-  ctx: Record<string, unknown>;
+  ctx: Ctx;
 }) => Promise<string> | string;
 
-export type Reader = (params: {
+export type WriteContentFunc = (params: {
+  content: any;
   file: File;
   mode: TransformerMode;
-  ctx: Record<string, unknown>;
-}) => Promise<unknown | null> | unknown | null;
+  ctx: Ctx;
+}) => MaybePromise<void>;
 
-export type Writer = (params: {
-  content: unknown;
-  file: File;
-  mode: TransformerMode;
-  ctx: Record<string, unknown>;
-}) => Promise<void> | void;
-
-export type ResponseMaker = (params: {
-  content: unknown;
+export type SendResponseFunc = (params: {
+  content: any;
   file: File;
   res: Response;
   mode: TransformerMode;
-  ctx: Record<string, unknown>;
-}) => Promise<void> | void;
+  ctx: Ctx;
+}) => MaybePromise<void>;
 
-export interface DevTransformer {
-  test: RegExp;
-  reader: Reader;
-  processors: Processor[];
-  responseMaker: ResponseMaker;
-}
+export type FileTestFunc = (params: { file: File; mode: TransformerMode; ctx: Ctx }) => MaybePromise<boolean>;
 
-export interface BuildTransformer {
-  test: RegExp;
-  reader: Reader;
+export type BeforeTestFunc = (params: { file: File; mode: TransformerMode; ctx: Ctx }) => MaybePromise<void>;
+
+export interface Transformer {
+  // test: RegExp;
+  // reader: Reader;
+  beforeTest?: BeforeTestFunc;
+  test: FileTestFunc;
   processors: Processor[];
-  writer: Writer;
+  sendResponse: SendResponseFunc;
+  writeContent: WriteContentFunc;
 }
 
 export interface MultiStaticConfig {
@@ -76,7 +74,7 @@ export interface MultiStaticConfig {
   afterBuild: () => Promise<void> | void;
 
   /** Функция вызываемая до запуска web-сервера в dev режиме */
-  beforeDevStart: (params: { app?: Express }) => Promise<void> | void;
+  beforeDevStart: (params: { app?: Express }) => MaybePromise<void>;
 
   /** Дополнительные опции (могут использоваться обработчиками файлов) */
   customOptions: Record<string, unknown>;
@@ -86,8 +84,5 @@ export interface MultiStaticConfig {
   optionsFileName: string;
 
   /** Трансформеры для dev-режима */
-  devTransformers: Partial<DevTransformer>[];
-
-  /** Трансформеры для build-режима */
-  buildTransformers: Partial<BuildTransformer>[];
+  transformers: Partial<Transformer>[];
 }

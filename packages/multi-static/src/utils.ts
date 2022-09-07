@@ -1,24 +1,65 @@
 import path from 'path';
 import mime from 'mime-types';
 import glob from 'glob';
+import readFirstLine from 'read-first-line';
 import noop from 'lodash/noop';
 import merge from 'lodash/merge';
 import escapeRegExp from 'lodash/escapeRegExp';
 import fs from 'fs-extra';
-import { BuildTransformer, DevTransformer, MultiStaticConfig, Reader, ResponseMaker, Writer } from './types';
+import {
+  Ctx,
+  File,
+  MaybePromise,
+  MultiStaticConfig,
+  SendResponseFunc,
+  Transformer,
+  TransformerMode,
+  WriteContentFunc,
+} from './types';
 import { transformSync as esbuildTransformSync } from 'esbuild';
 
-export const defaultReader: Reader = ({ file }) => {
+export const makeTest = ({
+  check,
+  checkFirstLine,
+  checkFileExists = true,
+}: {
+  check?: (params: { file: File; ctx: Ctx; mode: TransformerMode }) => MaybePromise<boolean>;
+  checkFirstLine?: (firstLine: string) => MaybePromise<boolean>;
+  checkFileExists?: boolean;
+} = {}) => {
+  return async ({ file, mode, ctx }: { file: File; mode: TransformerMode; ctx: Ctx }): Promise<boolean> => {
+    if (checkFileExists) {
+      if (!(fs.existsSync(file.srcPath) && fs.lstatSync(file.srcPath).isFile())) {
+        return false;
+      }
+    }
+    if (check) {
+      if (!(await check({ file, mode, ctx }))) {
+        return false;
+      }
+    }
+    if (checkFirstLine) {
+      const firstLine = await readFirstLine(file.srcPath);
+      if (!(await checkFirstLine(firstLine))) {
+        return false;
+      }
+    }
+    return true;
+  };
+};
+
+export const defaultTest = makeTest();
+
+export const defaultFileReader = ({ file }: { file: File }) => {
   return fs.readFileSync(file.srcPath, 'utf-8');
 };
 
-export const defaultWriter: Writer = ({ file, content }) => {
-  console.log('==', file.dstPath);
-  fs.ensureFileSync(file.dstPath);
-  fs.writeFileSync(file.dstPath, content);
+export const defaultWriteContent: WriteContentFunc = async ({ file, content }) => {
+  await fs.ensureFile(file.dstPath);
+  await fs.writeFile(file.dstPath, content);
 };
 
-export const defaultDevTransformerResponseMaker: ResponseMaker = ({ content, file, res }) => {
+export const defaultSendResponse: SendResponseFunc = ({ content, file, res }) => {
   const mimeType = mime.lookup(file.dstPath);
   if (mimeType) {
     res.setHeader('Content-Type', mimeType);
@@ -27,14 +68,15 @@ export const defaultDevTransformerResponseMaker: ResponseMaker = ({ content, fil
   res.send(content);
 };
 
-export const defaultDevTransformer: Partial<DevTransformer> = {
-  reader: defaultReader,
-  responseMaker: defaultDevTransformerResponseMaker,
-};
-
-export const defaultBuildTransformer: Partial<BuildTransformer> = {
-  reader: defaultReader,
-  writer: defaultWriter,
+export const defaultTransformer: Partial<Transformer> = {
+  test: defaultTest,
+  processors: [
+    ({ file }) => {
+      return fs.readFileSync(file.srcPath, 'utf-8');
+    },
+  ],
+  sendResponse: defaultSendResponse,
+  writeContent: defaultWriteContent,
 };
 
 // Default config
@@ -46,10 +88,7 @@ export const defaultConfig: MultiStaticConfig = {
   },
   buildPath: path.join(process.cwd(), 'build'),
   mapping: [],
-  devTransformers: [],
-  buildTransformers: [],
-  // fileDevProcessing: defaultFileDevProcessing,
-  // fileBuildProcessing: defaultFileBuildProcessing,
+  transformers: [],
   mappingDevLocationRewrite: (dst) => dst,
   mappingBuildLocationRewrite: (dst) => dst,
   beforeBuild: noop,
@@ -111,7 +150,6 @@ export const readConfig = async (userConfigSrc: string | undefined) => {
     }
 
     const userConfig = extendedRequire<Partial<MultiStaticConfig>>(configPath) as MultiStaticConfig;
-    console.log('+++', userConfig);
     merge(config, userConfig);
 
     return config;

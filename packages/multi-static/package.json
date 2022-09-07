@@ -26,7 +26,8 @@
     "fs-extra": "10.0.0",
     "glob": "^7.1.7",
     "lodash": "4.17.21",
-    "mime-types": "2.1.30"
+    "mime-types": "2.1.30",
+    "read-first-line": "^1.0.5"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.3.0",

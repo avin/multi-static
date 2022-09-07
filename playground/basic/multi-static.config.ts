@@ -1,59 +1,41 @@
-import fs from 'fs';
-import { defineConfig, Processor } from 'multi-static';
+import { defineConfig, makeTest, defaultFileReader } from 'multi-static';
 import sass from 'sass';
-
-const htmlProcessors: Processor[] = [
-  ({ content }) => {
-    return (content as string).replace(/world/g, 'TRANSED');
-  },
-  ({ content }) => {
-    return (content as string).replace(/TRANSED/g, 'MORE_TRANSED');
-  },
-];
-
-const scssProcessors: Processor[] = [
-  ({ file }) => {
-    const sassResult = sass.compile(file.srcPath, {
-      loadPaths: [process.cwd()],
-    });
-    return sassResult.css;
-  },
-];
 
 const config = defineConfig({
   mapping: [['./static', '/']],
 
-  devTransformers: [
+  transformers: [
     {
-      test: /\.html$/,
-      processors: htmlProcessors,
+      test: makeTest({
+        check: ({ file }) => file.srcPath.endsWith('.html'),
+      }),
+      processors: [
+        defaultFileReader,
+        ({ content }) => {
+          return (content as string).replace(/world/g, 'TRANSED');
+        },
+        ({ content }) => {
+          return (content as string).replace(/TRANSED/g, 'MORE_TRANSED');
+        },
+      ],
     },
     {
-      test: /\.css$/,
-      reader: ({ file }) => {
-        const sassFilePath = file.srcPath.replace(/\.css$/, '.scss');
-        if (!fs.existsSync(sassFilePath)) {
-          return null;
-        }
-        file.srcPath = sassFilePath;
-        return true;
-      },
-      processors: scssProcessors,
-    },
-  ],
-
-  buildTransformers: [
-    {
-      test: /\.html$/,
-      processors: htmlProcessors,
-    },
-    {
-      test: /\.scss$/,
-      reader: ({ file }) => {
+      beforeTest: ({ file, mode }) => {
         file.dstPath = file.dstPath.replace(/\.scss$/, '.css');
-        return true;
+        file.srcPath = file.srcPath.replace(/\.css$/, '.scss');
       },
-      processors: scssProcessors,
+      test: makeTest({
+        check: ({ file }) => file.srcPath.endsWith('.scss'),
+        checkFirstLine: (firstLine) => firstLine.startsWith('// @process'),
+      }),
+      processors: [
+        ({ file }) => {
+          const sassResult = sass.compile(file.srcPath, {
+            loadPaths: [process.cwd()],
+          });
+          return sassResult.css;
+        },
+      ],
     },
   ],
 });

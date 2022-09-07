@@ -1788,6 +1788,11 @@ raw-body@2.4.0:
     iconv-lite "0.4.24"
     unpipe "1.0.0"
 
+read-first-line@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/read-first-line/-/read-first-line-1.0.5.tgz#42f4fb39a997d87a41e35e2c2fac1ce9d3f0cd5c"
+  integrity sha512-ud19/5kMa6gyyg8zPcxgGZhEPsjCDvGZUjASpSYC70M0qGfTrQw5YT3mZ0lNv3/fUuCprP1hrPTfZaggs/63DQ==
+
 readdirp@~3.6.0:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/readdirp/-/readdirp-3.6.0.tgz#74a370bd857116e245b29cc97340cd431a02a6c7"

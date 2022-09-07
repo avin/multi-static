@@ -1,8 +1,8 @@
 import { MultiStaticConfig } from './types';
 import {
-  defaultBuildTransformer,
-  defaultReader,
-  defaultWriter,
+  defaultTest,
+  defaultTransformer,
+  defaultWriteContent,
   getFilesList,
   getGlobBasePath,
   mixInCustomPageOptions,
@@ -66,39 +66,36 @@ export const build = async (config: MultiStaticConfig) => {
 
       const destinationFileSrc = fileSrc.replace(new RegExp(`^${escapeRegExp(staticFilesBasePath)}`), buildPath);
 
-      const file = {
-        srcPath: fileSrc,
-        dstPath: destinationFileSrc,
-      };
       const mode = 'build';
 
-      for (const buildTransformer of [...config.buildTransformers, defaultBuildTransformer]) {
-        // 1) Test
-        if (buildTransformer.test && !buildTransformer.test.test(file.srcPath)) {
-          continue;
-        }
+      for (const transformer of [...config.transformers, defaultTransformer]) {
+        const file = {
+          srcPath: fileSrc,
+          dstPath: destinationFileSrc,
+        };
+
         const ctx = {};
 
-        // 2) Read
-        let content: unknown;
-        try {
-          const reader = buildTransformer.reader || defaultReader;
-          content = await reader({ file, mode, ctx });
-          if (content === null) {
-            continue;
-          }
-        } catch (e) {
+        // 0) Before test
+        if (transformer.beforeTest) {
+          await transformer.beforeTest({ file, mode, ctx });
+        }
+
+        // 1) Test
+        const test = transformer.test || defaultTest;
+        if (!(await test({ file, mode, ctx }))) {
           continue;
         }
 
         // 3) Process
-        for (const processor of buildTransformer.processors || []) {
+        let content;
+        for (const processor of transformer.processors || []) {
           content = await processor({ content, file, mode, ctx });
         }
 
-        // 4) Response
-        const writer = buildTransformer.writer || defaultWriter;
-        await writer({ content, file, mode, ctx });
+        // 4) Write
+        const writeContent = transformer.writeContent || defaultWriteContent;
+        await writeContent({ content, file, mode, ctx });
 
         break;
       }
