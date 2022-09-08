@@ -1,4 +1,4 @@
-import { Express, Response } from 'express';
+import { Express, Response, Request, NextFunction } from 'express';
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -32,6 +32,8 @@ export type SendResponseFunc = (
   params: {
     content: any;
     res: Response;
+    req: Request;
+    next: NextFunction;
   } & CommonParams,
 ) => MaybePromise<void>;
 

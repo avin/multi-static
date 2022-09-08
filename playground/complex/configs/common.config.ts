@@ -23,6 +23,9 @@ export default defineConfig({
   },
 
   transformers: [
+    // ------------
+    // *.SCSS -> CSS
+    // ------------
     {
       beforeTest: ({ file, mode }) => {
         file.dstPath = file.dstPath.replace(/\.scss$/, '.css');
@@ -34,14 +37,78 @@ export default defineConfig({
       }),
       processors: [
         ({ file }) => {
-          console.log('+1');
-          const sassResult = sass.compile(file.srcPath, {
-            loadPaths: [process.cwd()],
-          });
-          return sassResult.css;
+          return processScssFile(file.srcPath);
         },
       ],
     },
+
+    // ------------
+    // *.JS Webpack
+    // ------------
+    {
+      test: makeTest({
+        check: ({ file }) => file.srcPath.endsWith('.js'),
+        checkFirstLine: (firstLine) => firstLine.startsWith('// @process'),
+      }),
+      processors: [],
+      sendResponse: ({ file, req, res, next }) => {
+        let cachedWebpackMiddleware = _webpackMiddlewaresCache[file.srcPath];
+
+        if (!cachedWebpackMiddleware) {
+          const dstArr = file.dstPath.split('/');
+          const dstFileName = dstArr.slice(-1)[0];
+          const dstPath = dstArr.slice(0, -1).join('/');
+
+          const config = generateWebpackConfig({
+            mode: 'development',
+            src: file.srcPath,
+
+            filename: dstFileName,
+            publicPath: dstPath,
+          });
+
+          cachedWebpackMiddleware = webpackDevMiddleware(webpack(config), {
+            publicPath: config.output.publicPath,
+            stats: 'errors-only',
+          });
+          _webpackMiddlewaresCache[file.srcPath] = cachedWebpackMiddleware;
+        }
+
+        cachedWebpackMiddleware(req, res, next);
+      },
+      writeContent: async ({ file }) => {
+        const dstArr = file.dstPath.split(path.sep);
+        const dstFileName = dstArr.slice(-1)[0];
+        const dstPath = dstArr.slice(0, -1).join('/');
+
+        const config = generateWebpackConfig({
+          mode: 'production',
+          src: file.srcPath,
+
+          filename: dstFileName,
+          path: path.resolve(dstPath),
+          publicPath: '',
+        });
+
+        await new Promise<void>((resolve, reject) => {
+          webpack(config, (err, stats) => {
+            const errorsText = stats.toString({ all: false, errors: true });
+            if (errorsText) {
+              console.log(errorsText);
+            }
+
+            if (err) {
+              return reject();
+            }
+            resolve();
+          });
+        });
+      },
+    },
+
+    // ------------
+    // *.HTML Mustache
+    // ------------
     {
       test: makeTest({
         check: ({ file }) => file.srcPath.endsWith('.html'),
@@ -228,7 +295,7 @@ export default defineConfig({
     console.info('> afterBuild end\n');
   },
 
-  beforeDevStart(app) {
-    // mockerApi(app, path.resolve(__dirname, './mockerApi/index.js'));
+  beforeDevStart({ app }) {
+    mockerApi(app, path.resolve(__dirname, './mockerApi/index.js'));
   },
 });

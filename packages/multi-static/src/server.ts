@@ -117,7 +117,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
             // 4) Send response
             const sendResponse = transformer.sendResponse || defaultSendResponse;
-            await sendResponse({ content, file, res, mode, ctx, customOptions });
+            await sendResponse({ content, file, res, req, next, mode, ctx, customOptions });
 
             return;
           }

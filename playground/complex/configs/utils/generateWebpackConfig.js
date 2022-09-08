@@ -1,5 +1,4 @@
 const TerserPlugin = require('terser-webpack-plugin');
-const postcssNormalize = require('postcss-normalize');
 const getCSSModuleLocalIdent = require('./getCSSModuleLocalIdent');
 
 const cssRegex = /\.css$/;
@@ -40,7 +39,6 @@ function generateWebpackConfig({
                   stage: 3,
                 },
               ],
-              postcssNormalize(),
             ],
           },
         },
