@@ -1,8 +1,13 @@
 import { defineConfig, makeTest, defaultFileReader } from 'multi-static';
+import localhostCerts from 'localhost-certs';
 import sass from 'sass';
 
 const config = defineConfig({
   mapping: [['./static', '/']],
+
+  http: {
+    ...localhostCerts(),
+  },
 
   transformers: [
     {

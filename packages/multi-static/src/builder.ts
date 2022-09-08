@@ -1,7 +1,7 @@
 import { MultiStaticConfig } from './types';
 import {
+  defaultStreamTransformer,
   defaultTest,
-  defaultTransformer,
   defaultWriteContent,
   getFilesList,
   getGlobBasePath,
@@ -54,7 +54,7 @@ export const build = async (config: MultiStaticConfig) => {
           .replace(new RegExp(`^${escapeRegExp(staticFilesBasePath)}`, ''), '')
           .replace(new RegExp(escapeRegExp(path.sep), 'g'), '/');
 
-      mixInCustomPageOptions({
+      await mixInCustomPageOptions({
         reqPath,
         config,
         originalCustomOptions,
@@ -68,7 +68,7 @@ export const build = async (config: MultiStaticConfig) => {
 
       const mode = 'build';
 
-      for (const transformer of [...config.transformers, defaultTransformer]) {
+      for (const transformer of [...config.transformers, defaultStreamTransformer]) {
         const file = {
           srcPath: fileSrc,
           dstPath: destinationFileSrc,
@@ -76,26 +76,28 @@ export const build = async (config: MultiStaticConfig) => {
 
         const ctx = {};
 
+        const customOptions = config.customOptions;
+
         // 0) Before test
         if (transformer.beforeTest) {
-          await transformer.beforeTest({ file, mode, ctx });
+          await transformer.beforeTest({ file, mode, ctx, customOptions });
         }
 
         // 1) Test
         const test = transformer.test || defaultTest;
-        if (!(await test({ file, mode, ctx }))) {
+        if (!(await test({ file, mode, ctx, customOptions }))) {
           continue;
         }
 
         // 3) Process
         let content;
         for (const processor of transformer.processors || []) {
-          content = await processor({ content, file, mode, ctx });
+          content = await processor({ content, file, mode, ctx, customOptions });
         }
 
         // 4) Write
         const writeContent = transformer.writeContent || defaultWriteContent;
-        await writeContent({ content, file, mode, ctx });
+        await writeContent({ content, file, mode, ctx, customOptions });
 
         break;
       }

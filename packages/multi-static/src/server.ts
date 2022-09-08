@@ -7,6 +7,7 @@ import http from 'http';
 import {
   defaultFileReader,
   defaultSendResponse,
+  defaultStreamTransformer,
   defaultTest,
   defaultTransformer,
   getGlobBasePath,
@@ -36,7 +37,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
   app.use(async function (req, res, next) {
     const reqPath = req.path;
-    mixInCustomPageOptions({
+    await mixInCustomPageOptions({
       reqPath,
       config,
       originalCustomOptions,
@@ -88,34 +89,35 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
           const mode = 'dev';
 
-          for (const transformer of [...config.transformers, defaultTransformer]) {
+          for (const transformer of [...config.transformers, defaultStreamTransformer]) {
             const file = {
               srcPath: fileSrc,
               dstPath: reqPath,
             };
 
             const ctx = {};
+            const customOptions = config.customOptions;
 
             // 0) Before test
             if (transformer.beforeTest) {
-              await transformer.beforeTest({ file, mode, ctx });
+              await transformer.beforeTest({ file, mode, ctx, customOptions });
             }
 
             // 1) Test
             const test = transformer.test || defaultTest;
-            if (!(await test({ file, mode, ctx }))) {
+            if (!(await test({ file, mode, ctx, customOptions }))) {
               continue;
             }
 
             // 3) Process
             let content;
             for (const processor of transformer.processors || [defaultFileReader]) {
-              content = await processor({ content, file, mode, ctx });
+              content = await processor({ content, file, mode, ctx, customOptions });
             }
 
             // 4) Send response
             const sendResponse = transformer.sendResponse || defaultSendResponse;
-            await sendResponse({ content, file, res, mode, ctx });
+            await sendResponse({ content, file, res, mode, ctx, customOptions });
 
             return;
           }

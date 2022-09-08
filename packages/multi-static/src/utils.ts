@@ -11,12 +11,15 @@ import {
   File,
   MaybePromise,
   MultiStaticConfig,
+  NodeModuleWithCompile,
   SendResponseFunc,
   Transformer,
   TransformerMode,
   WriteContentFunc,
 } from './types';
-import { transformSync as esbuildTransformSync } from 'esbuild';
+import { build as esbuildBuild } from 'esbuild';
+import module from 'module';
+import defu from 'defu';
 
 export const makeTest = ({
   check,
@@ -64,15 +67,31 @@ export const defaultSendResponse: SendResponseFunc = ({ content, file, res }) =>
   if (mimeType) {
     res.setHeader('Content-Type', mimeType);
   }
-
   res.send(content);
+};
+
+export const defaultStreamTransformer: Partial<Transformer> = {
+  test: defaultTest,
+  processors: [({ file }) => fs.createReadStream(file.srcPath)],
+  sendResponse: ({ content, file, res }) => {
+    const mimeType = mime.lookup(file.dstPath);
+    if (mimeType) {
+      res.setHeader('Content-Type', mimeType);
+    }
+    content.pipe(res);
+  },
+  writeContent: async ({ file, content }) => {
+    await fs.ensureFile(file.dstPath);
+    const writeStream = fs.createWriteStream(file.dstPath);
+    content.pipe(writeStream);
+  },
 };
 
 export const defaultTransformer: Partial<Transformer> = {
   test: defaultTest,
   processors: [
     ({ file }) => {
-      return fs.readFileSync(file.srcPath, 'utf-8');
+      return fs.readFileSync(file.srcPath);
     },
   ],
   sendResponse: defaultSendResponse,
@@ -102,35 +121,116 @@ export const defineConfig = (config: Partial<MultiStaticConfig>) => {
   return config;
 };
 
-export const extendedRequire = <T>(id: string): T => {
-  const modulePath = require.resolve(id);
-  const moduleContent = fs.readFileSync(modulePath, 'utf-8');
-  const { code } = esbuildTransformSync(moduleContent, {
-    format: 'cjs',
-    platform: 'node',
-    loader: 'ts',
-    target: `node${process.versions.node}`,
-    tsconfigRaw: '{"compilerOptions":{"useDefineForClassFields":true}}',
-  });
-  const module: { exports?: { default?: unknown } } = {
-    exports: {},
+export const executeModule = (fileName: string, bundledCode: string) => {
+  const extension = path.extname(fileName);
+
+  // @ts-expect-error
+  const extensions = module.Module._extensions;
+  let defaultLoader: any;
+  const isJs = extension === '.js';
+  if (isJs) {
+    defaultLoader = extensions[extension]!;
+  }
+
+  extensions[extension] = (module: NodeModule, filename: string) => {
+    if (filename === fileName) {
+      (module as NodeModuleWithCompile)._compile(bundledCode, filename);
+    } else {
+      if (!isJs) {
+        extensions[extension]!(module, filename);
+      } else {
+        defaultLoader(module, filename);
+      }
+    }
   };
-  // const context = { module, require };
-  // vm.createContext(context);
-  const wrappedSrc = `(function(module, exports, require) {${code}})(module, module.exports, require);`;
-  // const script = new vm.Script(wrappedSrc, { filename: modulePath, displayErrors: false });
+  let config;
   try {
-    // script.runInContext(context);
-    eval(wrappedSrc);
-  } catch (e) {
-    console.error(e);
-    process.exit(1);
+    if (isJs && require && require.cache) {
+      delete require.cache[fileName];
+    }
+    const raw = require(fileName);
+    config = raw.__esModule ? raw.default : raw;
+    if (defaultLoader && isJs) {
+      extensions[extension] = defaultLoader;
+    }
+  } catch (error) {
+    console.error(error);
   }
-  if (module.exports?.default) {
-    return module.exports.default as T;
-  }
-  return module.exports as T;
+
+  return config;
 };
+
+export const extendedRequire = async <T>(p: string): Promise<T> => {
+  const pkg = require(path.join(process.cwd(), 'package.json'));
+
+  const result = await esbuildBuild({
+    entryPoints: [p],
+    outfile: 'out.js',
+    write: false,
+    platform: 'node',
+    bundle: true,
+    format: 'cjs',
+    metafile: true,
+    target: 'es2015',
+    external: ['esbuild', ...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})],
+    logLevel: 'silent',
+  });
+  const { text } = result.outputFiles[0];
+
+  return (await executeModule(p, text)) as T;
+};
+
+// export const extendedRequire = async <T>(filePath: string): Promise<T> => {
+//   return (await resolveModule(filePath)) as T;
+//   // // const moduleContent = fs.readFileSync(filePath, 'utf-8');
+//   // // const { code } = esbuildTransformSync(moduleContent, {
+//   // //   format: 'cjs',
+//   // //   platform: 'node',
+//   // //   loader: 'ts',
+//   // //   target: `node${process.versions.node}`,
+//   // //   tsconfigRaw: '{"compilerOptions":{"useDefineForClassFields":true}}',
+//   // // });
+//   //
+//   //
+//   //
+//   // const result = esbuildBuildSync({
+//   //   entryPoints: [filePath],
+//   //   platform: 'node',
+//   //   bundle: true,
+//   //   write: false,
+//   //   format: 'cjs',
+//   //   metafile: true,
+//   //   target: 'es2015',
+//   //   external: ['esbuild', ...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})],
+//   // });
+//   //
+//   // const code = result.outputFiles[0].text;
+//   //
+//   // const module: { exports?: { default?: unknown } } = {
+//   //   exports: {},
+//   // };
+//   //
+//   // // const context = { module, require };
+//   // // vm.createContext(context);
+//   // const wrappedSrc = `(function(module, exports, require) {${code}})(module, module.exports, require);`;
+//   // // const script = new vm.Script(wrappedSrc, { filename: modulePath, displayErrors: false });
+//   //
+//   // try {
+//   //   // script.runInContext(context);
+//   //   eval(wrappedSrc);
+//   //
+//   //   // const obj = vm.runInNewContext(wrappedSrc);
+//   //
+//   //   console.log('++++++++', module);
+//   // } catch (e) {
+//   //   console.error(e);
+//   //   process.exit(1);
+//   // }
+//   // if (module.exports?.default) {
+//   //   return module.exports.default as T;
+//   // }
+//   // return module.exports as T;
+// };
 
 // Read user config
 export const readConfig = async (userConfigSrc: string | undefined) => {
@@ -139,18 +239,15 @@ export const readConfig = async (userConfigSrc: string | undefined) => {
     : ['multi-static.config.ts', 'multi-static.config.mjs', 'multi-static.config.cjs', 'multi-static.config.js'];
 
   for (const configSrc of configSrces) {
-    const config: MultiStaticConfig = merge({}, defaultConfig);
-
     const configPath = path.join(process.cwd(), configSrc);
 
-    try {
-      await fs.ensureFile(configPath);
-    } catch {
+    if (!fs.existsSync(configPath)) {
       continue;
     }
 
-    const userConfig = extendedRequire<Partial<MultiStaticConfig>>(configPath) as MultiStaticConfig;
-    merge(config, userConfig);
+    const userConfig = await extendedRequire<Partial<MultiStaticConfig>>(configPath);
+
+    const config: MultiStaticConfig = defu(userConfig, defaultConfig);
 
     return config;
   }
@@ -173,7 +270,7 @@ export const getFilesList = (dir: string, pathList: string[] = []) => {
 };
 
 // Mix content of _options.js files to pageOptions of current config
-export const mixInCustomPageOptions = ({
+export const mixInCustomPageOptions = async ({
   reqPath,
   config,
   originalCustomOptions,
@@ -207,7 +304,7 @@ export const mixInCustomPageOptions = ({
         const fileSrc = path.join(process.cwd(), staticPath, cleanServeLocation);
 
         try {
-          const newPageOptions = extendedRequire<Record<string, unknown>>(fileSrc);
+          const newPageOptions = await extendedRequire<Record<string, unknown>>(fileSrc);
           newCustomOptions = merge({}, newPageOptions, newCustomOptions);
         } catch (e) {
           //

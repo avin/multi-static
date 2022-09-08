@@ -7,35 +7,37 @@ export interface File {
   dstPath: string;
 }
 
-export type Ctx = Record<string, unknown>;
+export type Ctx = Record<string, any>;
+
+export type CustomOptions = Record<string, any>;
 
 export type TransformerMode = 'dev' | 'build';
 
-export type Processor = (params: {
-  content: any;
+type CommonParams = {
   file: File;
   mode: TransformerMode;
   ctx: Ctx;
-}) => Promise<string> | string;
+  customOptions: CustomOptions;
+};
 
-export type WriteContentFunc = (params: {
-  content: any;
-  file: File;
-  mode: TransformerMode;
-  ctx: Ctx;
-}) => MaybePromise<void>;
+export type Processor = (params: { content: any } & CommonParams) => Promise<any> | any;
 
-export type SendResponseFunc = (params: {
-  content: any;
-  file: File;
-  res: Response;
-  mode: TransformerMode;
-  ctx: Ctx;
-}) => MaybePromise<void>;
+export type WriteContentFunc = (
+  params: {
+    content: any;
+  } & CommonParams,
+) => MaybePromise<void>;
 
-export type FileTestFunc = (params: { file: File; mode: TransformerMode; ctx: Ctx }) => MaybePromise<boolean>;
+export type SendResponseFunc = (
+  params: {
+    content: any;
+    res: Response;
+  } & CommonParams,
+) => MaybePromise<void>;
 
-export type BeforeTestFunc = (params: { file: File; mode: TransformerMode; ctx: Ctx }) => MaybePromise<void>;
+export type FileTestFunc = (params: CommonParams) => MaybePromise<boolean>;
+
+export type BeforeTestFunc = (params: CommonParams) => MaybePromise<void>;
 
 export interface Transformer {
   // test: RegExp;
@@ -77,7 +79,7 @@ export interface MultiStaticConfig {
   beforeDevStart: (params: { app?: Express }) => MaybePromise<void>;
 
   /** Дополнительные опции (могут использоваться обработчиками файлов) */
-  customOptions: Record<string, unknown>;
+  customOptions: CustomOptions;
 
   /** Имя файла с дополнительными опциями.
    * Опции будут применимы ко всем файлам внутри этого каталога и к вложенным */
@@ -85,4 +87,8 @@ export interface MultiStaticConfig {
 
   /** Трансформеры для dev-режима */
   transformers: Partial<Transformer>[];
+}
+
+export interface NodeModuleWithCompile extends NodeModule {
+  _compile(code: string, filename: string): any;
 }
