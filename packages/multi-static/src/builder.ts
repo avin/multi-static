@@ -68,6 +68,13 @@ export const build = async (config: MultiStaticConfig) => {
 
       const mode = 'build';
 
+      if (config.exclude) {
+        const excludeResult = await config.exclude(reqPath);
+        if (excludeResult) {
+          continue;
+        }
+      }
+
       for (const transformer of [...config.transformers, defaultStreamTransformer]) {
         const file = {
           srcPath: fileSrc,

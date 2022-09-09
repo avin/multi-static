@@ -85,9 +85,14 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
         }
 
         if (fileSrc) {
-          // const success = await config.fileDevProcessing({ fileSrc, req, res, next });
-
           const mode = 'dev';
+
+          if (config.exclude) {
+            const excludeResult = await config.exclude(reqPath);
+            if (excludeResult) {
+              continue;
+            }
+          }
 
           for (const transformer of [...config.transformers, defaultStreamTransformer]) {
             const file = {

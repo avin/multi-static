@@ -1,17 +1,14 @@
 import fs from 'fs-extra';
 import localhostCerts from 'localhost-certs';
-import { defaultFileReader, defineConfig, getFilesList, makeTest } from 'multi-static';
+import { defineConfig, getFilesList, makeTest } from 'multi-static';
 import path from 'path';
-import _ from 'lodash';
 import mockerApi from 'mocker-api';
 import webpack from 'webpack';
-import readFirstLine from 'read-first-line';
 import generateWebpackConfig from './utils/generateWebpackConfig';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import mustacheProcessFile from './utils/mustacheProcessFile';
 import processScssFile from './utils/processScssFile';
 import staticHashVersion from 'static-hash-version';
-import sass from 'sass';
 
 const _webpackMiddlewaresCache = {};
 
@@ -21,6 +18,9 @@ export default defineConfig({
     https: true,
     ...localhostCerts(),
   },
+
+  // Исключаем файлы и папки начинающиеся с _подчеркивания
+  exclude: (dstPath) => /[\\/]_/.test(dstPath),
 
   transformers: [
     // ------------
@@ -115,7 +115,6 @@ export default defineConfig({
       }),
       processors: [
         ({ file, customOptions }) => {
-          console.log('+2');
           return mustacheProcessFile(file.srcPath, customOptions);
         },
       ],

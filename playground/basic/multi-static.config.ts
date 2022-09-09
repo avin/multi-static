@@ -1,6 +1,7 @@
 import { defineConfig, makeTest, defaultFileReader } from 'multi-static';
 import localhostCerts from 'localhost-certs';
 import sass from 'sass';
+import fs from 'fs-extra';
 
 const config = defineConfig({
   mapping: [['./static', '/']],
@@ -8,6 +9,8 @@ const config = defineConfig({
   http: {
     ...localhostCerts(),
   },
+
+  exclude: ({ file }) => file.dstPath.includes('favicon.ico'),
 
   transformers: [
     {
@@ -43,6 +46,11 @@ const config = defineConfig({
       ],
     },
   ],
+
+  beforeBuild() {
+    console.info(`+ removing ${this.buildPath}`);
+    fs.removeSync(this.buildPath as string);
+  },
 });
 
 export default config;
