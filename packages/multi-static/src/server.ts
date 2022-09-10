@@ -69,14 +69,16 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
               fileSrc = path.join(process.cwd(), filePath);
             }
           });
+        } else if (
+          fs.existsSync(localPath) &&
+          !fs.lstatSync(localPath).isDirectory() &&
+          localPath.endsWith(subReqPath)
+        ) {
+          // Если соло-файл
+          fileSrc = localPath;
         } else {
-          if (fs.existsSync(localPath) && !fs.lstatSync(localPath).isDirectory() && localPath.endsWith(subReqPath)) {
-            // Если соло-файл
-            fileSrc = localPath;
-          } else {
-            // Если папка
-            fileSrc = path.join(localPath, subReqPath);
-          }
+          // Если папка
+          fileSrc = path.join(localPath, subReqPath);
         }
 
         if (fileSrc) {
