@@ -56,13 +56,14 @@ export const defaultFileReader = ({ file }: { file: File }) => {
   return fs.readFileSync(file.srcPath, 'utf-8');
 };
 
-export const defaultWriteContent: WriteContentFunc = async ({ file, content }) => {
-  await fs.ensureFile(file.dstPath);
-  await fs.writeFile(file.dstPath, content);
+export const defaultWriteContent: WriteContentFunc = async ({ file, content, buildPath }) => {
+  const dstPath = path.join(buildPath, file.reqPath);
+  await fs.ensureFile(dstPath);
+  await fs.writeFile(dstPath, content);
 };
 
 export const defaultSendResponse: SendResponseFunc = ({ content, file, res }) => {
-  const mimeType = mime.lookup(file.dstPath);
+  const mimeType = mime.lookup(file.reqPath);
   if (mimeType) {
     res.setHeader('Content-Type', mimeType);
   }
@@ -73,15 +74,16 @@ export const defaultStreamTransformer: Partial<Transformer> = {
   test: defaultTest,
   processors: [({ file }) => fs.createReadStream(file.srcPath)],
   sendResponse: ({ content, file, res }) => {
-    const mimeType = mime.lookup(file.dstPath);
+    const mimeType = mime.lookup(file.reqPath);
     if (mimeType) {
       res.setHeader('Content-Type', mimeType);
     }
     (content as Stream).pipe(res);
   },
-  writeContent: async ({ file, content }) => {
-    await fs.ensureFile(file.dstPath);
-    const writeStream = fs.createWriteStream(file.dstPath);
+  writeContent: async ({ file, content, buildPath }) => {
+    const dstPath = path.join(buildPath, file.reqPath);
+    await fs.ensureFile(dstPath);
+    const writeStream = fs.createWriteStream(dstPath);
     (content as Stream).pipe(writeStream);
   },
 };
@@ -113,6 +115,8 @@ export const defaultConfig: MultiStaticConfig = {
   beforeDevStart: noop,
   customOptions: {},
   optionsFileName: '_options.js',
+  // Exclude files and folders starts with "_"
+  exclude: (reqPath) => /\/_/.test(reqPath),
 };
 
 export const defineConfig = (config: Partial<MultiStaticConfig>) => {

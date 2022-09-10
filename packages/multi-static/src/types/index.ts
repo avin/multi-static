@@ -4,7 +4,7 @@ export type MaybePromise<T> = T | Promise<T>;
 
 export interface File {
   srcPath: string;
-  dstPath: string;
+  reqPath: string;
 }
 
 export type Ctx = Record<string, any>;
@@ -25,6 +25,7 @@ export type Processor = (params: { content: any } & CommonParams) => Promise<any
 export type WriteContentFunc = (
   params: {
     content: any;
+    buildPath: string;
   } & CommonParams,
 ) => MaybePromise<void>;
 

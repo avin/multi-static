@@ -15,8 +15,6 @@ export const build = async (config: MultiStaticConfig) => {
   for (let [staticPath, serveLocation] of config.mapping) {
     serveLocation = config.mappingBuildLocationRewrite(serveLocation);
 
-    const buildPath = path.join(config.buildPath, serveLocation);
-
     const staticFilesPath = path.join(process.cwd(), staticPath);
     let staticFilesBasePath: string;
 
@@ -41,10 +39,10 @@ export const build = async (config: MultiStaticConfig) => {
       }
     })();
 
-    for (const fileSrc of files) {
+    for (const srcPath of files) {
       const reqPath =
         serveLocation +
-        fileSrc
+        srcPath
           .replace(new RegExp(`^${escapeRegExp(staticFilesBasePath)}`, ''), '')
           .replace(new RegExp(escapeRegExp(path.sep), 'g'), '/');
 
@@ -58,8 +56,6 @@ export const build = async (config: MultiStaticConfig) => {
 
       // ---------------------------
 
-      const destinationFileSrc = fileSrc.replace(new RegExp(`^${escapeRegExp(staticFilesBasePath)}`), buildPath);
-
       const mode = 'build';
 
       if (config.exclude) {
@@ -69,10 +65,12 @@ export const build = async (config: MultiStaticConfig) => {
         }
       }
 
+      console.log(srcPath, reqPath);
+
       for (const transformer of [...config.transformers, defaultStreamTransformer]) {
         const file = {
-          srcPath: fileSrc,
-          dstPath: destinationFileSrc,
+          srcPath,
+          reqPath,
         };
 
         const ctx = {};
@@ -98,7 +96,7 @@ export const build = async (config: MultiStaticConfig) => {
 
         // 4) Write
         const writeContent = transformer.writeContent || defaultWriteContent;
-        await writeContent({ content, file, mode, ctx, customOptions });
+        await writeContent({ content, file, mode, ctx, customOptions, buildPath: config.buildPath });
 
         break;
       }

@@ -95,7 +95,8 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
           for (const transformer of [...config.transformers, defaultStreamTransformer]) {
             const file = {
               srcPath: fileSrc,
-              dstPath: reqPath,
+              dstPath: path.join(config.buildPath, reqPath),
+              reqPath,
             };
 
             const ctx = {};

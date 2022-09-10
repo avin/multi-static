@@ -8,7 +8,9 @@ export const getFilesList = (dir: string, pathList: string[] = []) => {
       const absolute = path.join(dir, file);
       if (fs.statSync(absolute).isDirectory()) {
         return getFilesList(absolute, pathList);
-      } else return pathList.push(absolute);
+      } else {
+        return pathList.push(absolute);
+      }
     });
   }
 

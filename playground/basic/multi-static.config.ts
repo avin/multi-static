@@ -10,7 +10,7 @@ const config = defineConfig({
     ...localhostCerts(),
   },
 
-  exclude: ({ file }) => file.dstPath.includes('favicon.ico'),
+  exclude: (dstPath) => dstPath.includes('favicon.ico'),
 
   transformers: [
     {
