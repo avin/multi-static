@@ -15,6 +15,7 @@ import {
   mixInCustomPageOptions,
 } from './config';
 import { getGlobBasePath } from './utils/files';
+import reverse from 'lodash/reverse';
 
 export const startServer = async (config: MultiStaticConfig): Promise<https.Server | http.Server> => {
   const originalCustomOptions = config.customOptions;
@@ -45,40 +46,40 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
     // ---------------------------
 
-    for (let [staticPath, serveLocation] of config.mapping) {
-      serveLocation = config.mappingDevLocationRewrite(serveLocation);
+    for (let [localPath, servePath] of reverse(config.mapping)) {
+      servePath = config.mappingDevLocationRewrite(servePath);
 
-      // Если роут попадает под условие serveLocation
-      if (req.path.startsWith(serveLocation)) {
-        const cleanServeLocation = req.path.replace(new RegExp(`^${escapeRegExp(serveLocation)}`, ''), '');
+      // Если роут попадает под условие servePath
+      if (req.path.startsWith(servePath)) {
+        const cleanServePath = req.path.replace(new RegExp(`^${escapeRegExp(servePath)}`, ''), '');
 
         let fileSrc: string | undefined;
 
-        if (glob.hasMagic(staticPath)) {
+        if (glob.hasMagic(localPath)) {
           // Если glob
-          const filePaths = glob.sync(staticPath);
+          const filePaths = glob.sync(localPath);
 
           filePaths.forEach((filePath) => {
             // Часть пути до файла в основе которой магия glob
-            const globFilePart = filePath.replace(new RegExp(`^${escapeRegExp(getGlobBasePath(staticPath))}`), '');
+            const globFilePart = filePath.replace(new RegExp(`^${escapeRegExp(getGlobBasePath(localPath))}`), '');
 
-            if (globFilePart === cleanServeLocation) {
+            if (globFilePart === cleanServePath) {
               fileSrc = path.join(process.cwd(), filePath);
             }
           });
         } else {
-          const baseFileSrc = path.join(process.cwd(), staticPath);
+          const baseFileSrc = path.join(process.cwd(), localPath);
 
           if (
             fs.existsSync(baseFileSrc) &&
             !fs.lstatSync(baseFileSrc).isDirectory() &&
-            staticPath.endsWith(cleanServeLocation)
+            localPath.endsWith(cleanServePath)
           ) {
             // Если соло-файл
             fileSrc = baseFileSrc;
           } else {
             // Если папка
-            fileSrc = path.join(process.cwd(), staticPath, cleanServeLocation);
+            fileSrc = path.join(process.cwd(), localPath, cleanServePath);
           }
         }
 

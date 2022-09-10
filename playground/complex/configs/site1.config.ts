@@ -17,6 +17,6 @@ export default defineConfig({
   mapping: [
     ['./static/site1', '/root'],
     ['./static/_common', '/root'],
-    ['./static/_common/foo.json', '/root/page1/foo.json'],
+    ['./static/_common/foo.json', '/root/page1/foo2.json'],
   ],
 });

@@ -12,38 +12,36 @@ export const build = async (config: MultiStaticConfig) => {
   await config.beforeBuild();
 
   // Copy files according to the list from config.mapping
-  for (let [staticPath, serveLocation] of config.mapping) {
-    serveLocation = config.mappingBuildLocationRewrite(serveLocation);
+  for (let [localPath, servePath] of config.mapping) {
+    servePath = config.mappingBuildLocationRewrite(servePath);
 
-    const staticFilesPath = path.join(process.cwd(), staticPath);
-    let staticFilesBasePath: string;
+    localPath = path.join(process.cwd(), localPath);
+    let localBasePath: string;
 
     const files = (() => {
-      if (glob.hasMagic(staticFilesPath)) {
+      if (glob.hasMagic(localPath)) {
         // Путь без магической части
-        staticFilesBasePath = path.join(process.cwd(), getGlobBasePath(staticPath));
+        localBasePath = getGlobBasePath(localPath);
 
-        return glob.sync(staticFilesPath).map((i) => path.resolve(i));
+        return glob.sync(localPath).map((i) => path.resolve(i));
+      } else if (fs.lstatSync(localPath).isDirectory()) {
+        // Путь как он есть
+        localBasePath = localPath;
+
+        return getFilesList(localPath);
       } else {
-        if (fs.lstatSync(staticFilesPath).isDirectory()) {
-          // Путь как он есть
-          staticFilesBasePath = staticFilesPath;
+        // Путь без самого имени файла
+        localBasePath = localPath.replace(/\/[^/]+$/, '');
 
-          return getFilesList(staticFilesPath);
-        } else {
-          // Путь без самого имени файла
-          staticFilesBasePath = path.join(process.cwd(), staticPath.replace(/\/[^/]+$/, ''));
-
-          return [staticFilesPath];
-        }
+        return [localPath];
       }
     })();
 
     for (const srcPath of files) {
       const reqPath =
-        serveLocation +
+        servePath +
         srcPath
-          .replace(new RegExp(`^${escapeRegExp(staticFilesBasePath)}`, ''), '')
+          .replace(new RegExp(`^${escapeRegExp(localBasePath)}`, ''), '')
           .replace(new RegExp(escapeRegExp(path.sep), 'g'), '/');
 
       await mixInCustomPageOptions({
@@ -65,7 +63,7 @@ export const build = async (config: MultiStaticConfig) => {
         }
       }
 
-      console.log(srcPath, reqPath);
+      // console.log(srcPath, reqPath);
 
       for (const transformer of [...config.transformers, defaultStreamTransformer]) {
         const file = {
