@@ -19,6 +19,7 @@
     "multi-static": "bin/multi-static.js"
   },
   "dependencies": {
+    "@types/ramda": "^0.28.15",
     "cac": "^6.7.14",
     "defu": "^6.1.0",
     "esbuild": "^0.15.7",
@@ -28,6 +29,7 @@
     "glob": "^7.1.7",
     "lodash": "4.17.21",
     "mime-types": "2.1.30",
+    "ramda": "^0.28.0",
     "read-first-line": "^1.0.5"
   },
   "devDependencies": {

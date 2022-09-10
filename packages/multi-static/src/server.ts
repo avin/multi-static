@@ -1,6 +1,5 @@
 import { MultiStaticConfig } from './types';
 import express from 'express';
-import escapeRegExp from 'lodash/escapeRegExp';
 import path from 'path';
 import https from 'https';
 import http from 'http';
@@ -15,7 +14,8 @@ import {
   mixInCustomPageOptions,
 } from './config';
 import { getGlobBasePath, pathBelongsTo } from './utils/files';
-import reverse from 'lodash/reverse';
+import { reverse } from 'ramda';
+import { escapeRegExp } from './utils/helpers';
 
 export const startServer = async (config: MultiStaticConfig): Promise<https.Server | http.Server> => {
   const originalCustomOptions = config.customOptions;
@@ -49,6 +49,8 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
     for (let [localPath, servePath] of reverse(config.mapping)) {
       servePath = config.mappingDevLocationRewrite(servePath);
 
+      localPath = path.join(process.cwd(), localPath);
+
       // Если роут попадает под условие servePath
       if (pathBelongsTo(reqPath, servePath)) {
         const subReqPath = reqPath.replace(new RegExp(`^${escapeRegExp(servePath)}`, ''), '');
@@ -68,18 +70,12 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
             }
           });
         } else {
-          const baseFileSrc = path.join(process.cwd(), localPath);
-
-          if (
-            fs.existsSync(baseFileSrc) &&
-            !fs.lstatSync(baseFileSrc).isDirectory() &&
-            localPath.endsWith(subReqPath)
-          ) {
+          if (fs.existsSync(localPath) && !fs.lstatSync(localPath).isDirectory() && localPath.endsWith(subReqPath)) {
             // Если соло-файл
-            fileSrc = baseFileSrc;
+            fileSrc = localPath;
           } else {
             // Если папка
-            fileSrc = path.join(process.cwd(), localPath, subReqPath);
+            fileSrc = path.join(localPath, subReqPath);
           }
         }
 

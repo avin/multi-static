@@ -10,15 +10,14 @@ import {
   WriteContentFunc,
 } from './types';
 import path from 'path';
-import noop from 'lodash/noop';
 import fs from 'fs-extra';
 import { extendedRequire } from './utils/module';
 import defu from 'defu';
-import escapeRegExp from 'lodash/escapeRegExp';
 import merge from 'lodash/merge';
 import readFirstLine from 'read-first-line';
 import mime from 'mime-types';
 import { Stream } from 'stream';
+import { escapeRegExp, noop } from './utils/helpers';
 
 export const makeTest = ({
   check,

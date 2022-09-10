@@ -3,9 +3,9 @@ import { defaultStreamTransformer, defaultTest, defaultWriteContent, mixInCustom
 import { getFilesList, getGlobBasePath } from './utils/files';
 import glob from 'glob';
 import fs from 'fs-extra';
-import escapeRegExp from 'lodash/escapeRegExp';
 import path from 'path';
-import reverse from 'lodash/reverse';
+import { reverse } from 'ramda';
+import { escapeRegExp } from './utils/helpers';
 
 export const build = async (config: MultiStaticConfig) => {
   const originalCustomOptions = config.customOptions;
