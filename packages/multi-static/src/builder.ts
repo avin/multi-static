@@ -1,12 +1,6 @@
 import { MultiStaticConfig } from './types';
-import {
-  defaultStreamTransformer,
-  defaultTest,
-  defaultWriteContent,
-  getFilesList,
-  getGlobBasePath,
-  mixInCustomPageOptions,
-} from './utils';
+import { defaultStreamTransformer, defaultTest, defaultWriteContent, mixInCustomPageOptions } from './config';
+import { getFilesList, getGlobBasePath } from './utils/files';
 import glob from 'glob';
 import fs from 'fs-extra';
 import escapeRegExp from 'lodash/escapeRegExp';
@@ -97,7 +91,7 @@ export const build = async (config: MultiStaticConfig) => {
         }
 
         // 3) Process
-        let content;
+        let content: unknown;
         for (const processor of transformer.processors || []) {
           content = await processor({ content, file, mode, ctx, customOptions });
         }

@@ -1,8 +1,8 @@
 import cac from 'cac';
 import { startServer } from './server';
-import { defaultConfig, readConfig } from './utils';
 import { build } from './builder';
 import defu from 'defu';
+import { defaultConfig, readConfig } from './config';
 
 const cli = cac('multi-static');
 

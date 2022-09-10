@@ -92,7 +92,3 @@ export interface MultiStaticConfig {
 
   exclude?: (dstPath: string) => MaybePromise<boolean>;
 }
-
-export interface NodeModuleWithCompile extends NodeModule {
-  _compile(code: string, filename: string): any;
-}

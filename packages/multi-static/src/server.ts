@@ -4,19 +4,17 @@ import escapeRegExp from 'lodash/escapeRegExp';
 import path from 'path';
 import https from 'https';
 import http from 'http';
+import glob from 'glob';
+import fs from 'fs';
+import { AddressInfo } from 'net';
 import {
   defaultFileReader,
   defaultSendResponse,
   defaultStreamTransformer,
   defaultTest,
-  defaultTransformer,
-  getGlobBasePath,
   mixInCustomPageOptions,
-} from './utils';
-// import glob from 'fast-glob';
-import glob from 'glob';
-import fs from 'fs';
-import { AddressInfo } from 'net';
+} from './config';
+import { getGlobBasePath } from './utils/files';
 
 export const startServer = async (config: MultiStaticConfig): Promise<https.Server | http.Server> => {
   const originalCustomOptions = config.customOptions;
@@ -115,7 +113,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
             }
 
             // 3) Process
-            let content;
+            let content: unknown;
             for (const processor of transformer.processors || [defaultFileReader]) {
               content = await processor({ content, file, mode, ctx, customOptions });
             }
