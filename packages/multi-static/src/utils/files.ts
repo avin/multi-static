@@ -31,3 +31,15 @@ export const getGlobBasePath = (globString: string, pathSep = '/') => {
   const result: string = globParts.splice(0, magicIndex).join('/');
   return result;
 };
+
+export const pathBelongsTo = (oPath: string, cPath: string) => {
+  const oPathParts = oPath.split('/');
+  const cPathParts = cPath.split('/');
+
+  let result = true;
+
+  for (let i = 0; i < cPathParts.length; i++) {
+    result = result && cPathParts[i] === oPathParts[i];
+  }
+  return result;
+};

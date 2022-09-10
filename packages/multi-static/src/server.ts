@@ -14,7 +14,7 @@ import {
   defaultTest,
   mixInCustomPageOptions,
 } from './config';
-import { getGlobBasePath } from './utils/files';
+import { getGlobBasePath, pathBelongsTo } from './utils/files';
 import reverse from 'lodash/reverse';
 
 export const startServer = async (config: MultiStaticConfig): Promise<https.Server | http.Server> => {
@@ -50,8 +50,8 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
       servePath = config.mappingDevLocationRewrite(servePath);
 
       // Если роут попадает под условие servePath
-      if (req.path.startsWith(servePath)) {
-        const cleanServePath = req.path.replace(new RegExp(`^${escapeRegExp(servePath)}`, ''), '');
+      if (pathBelongsTo(reqPath, servePath)) {
+        const subReqPath = reqPath.replace(new RegExp(`^${escapeRegExp(servePath)}`, ''), '');
 
         let fileSrc: string | undefined;
 
@@ -63,7 +63,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
             // Часть пути до файла в основе которой магия glob
             const globFilePart = filePath.replace(new RegExp(`^${escapeRegExp(getGlobBasePath(localPath))}`), '');
 
-            if (globFilePart === cleanServePath) {
+            if (globFilePart === subReqPath) {
               fileSrc = path.join(process.cwd(), filePath);
             }
           });
@@ -73,13 +73,13 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
           if (
             fs.existsSync(baseFileSrc) &&
             !fs.lstatSync(baseFileSrc).isDirectory() &&
-            localPath.endsWith(cleanServePath)
+            localPath.endsWith(subReqPath)
           ) {
             // Если соло-файл
             fileSrc = baseFileSrc;
           } else {
             // Если папка
-            fileSrc = path.join(process.cwd(), localPath, cleanServePath);
+            fileSrc = path.join(process.cwd(), localPath, subReqPath);
           }
         }
 

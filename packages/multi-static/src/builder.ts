@@ -5,14 +5,17 @@ import glob from 'glob';
 import fs from 'fs-extra';
 import escapeRegExp from 'lodash/escapeRegExp';
 import path from 'path';
+import reverse from 'lodash/reverse';
 
 export const build = async (config: MultiStaticConfig) => {
   const originalCustomOptions = config.customOptions;
 
   await config.beforeBuild();
 
+  const processedReqPaths = new Set();
+
   // Copy files according to the list from config.mapping
-  for (let [localPath, servePath] of config.mapping) {
+  for (let [localPath, servePath] of reverse(config.mapping)) {
     servePath = config.mappingBuildLocationRewrite(servePath);
 
     localPath = path.join(process.cwd(), localPath);
@@ -43,6 +46,11 @@ export const build = async (config: MultiStaticConfig) => {
         srcPath
           .replace(new RegExp(`^${escapeRegExp(localBasePath)}`, ''), '')
           .replace(new RegExp(escapeRegExp(path.sep), 'g'), '/');
+
+      if (processedReqPaths.has(reqPath)) {
+        continue;
+      }
+      processedReqPaths.add(reqPath);
 
       await mixInCustomPageOptions({
         reqPath,
