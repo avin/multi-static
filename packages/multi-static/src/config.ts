@@ -114,8 +114,6 @@ export const defaultConfig: MultiStaticConfig = {
   beforeDevStart: noop,
   customOptions: {},
   optionsFileName: '_options.js',
-  // Exclude files and folders starts with "_"
-  exclude: (reqPath) => /\/_/.test(reqPath),
 };
 
 export const defineConfig = (config: Partial<MultiStaticConfig>) => {

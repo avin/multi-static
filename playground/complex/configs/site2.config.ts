@@ -18,9 +18,9 @@ export default defineConfig({
     ['./static/site2', '/root'],
     ['./static/_common', '/root'],
     // ['./static/_common/common.html', '/root'],
-    // ['./static/_blob/*.svg', '/root'],
-    // ['./static/_blob/**/*.{ico,png}', '/root'],
-    // ['./static/_blob/folder/*.{ico,png}', '/root'],
+    // ['./static/_globs/*.svg', '/root'],
+    // ['./static/_globs/**/*.{ico,png}', '/root'],
+    // ['./static/_globs/folder/*.{ico,png}', '/root'],
   ],
 
   // mappingDevLocationRewrite(location) {

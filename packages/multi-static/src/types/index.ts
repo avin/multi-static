@@ -90,6 +90,4 @@ export interface MultiStaticConfig {
 
   /** Трансформеры для dev-режима */
   transformers: Partial<Transformer>[];
-
-  exclude?: (dstPath: string) => MaybePromise<boolean>;
 }

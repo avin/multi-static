@@ -2,22 +2,36 @@ import fs from 'fs-extra';
 import path from 'path';
 import glob from 'glob';
 
-export const getFilesList = (dir: string, pathList: string[] = []) => {
+export const getFilesList = (
+  dir: string,
+  pathList: string[] = [],
+  options: { exclude?: (fileName: string) => boolean } = {},
+) => {
   if (fs.pathExistsSync(dir)) {
-    fs.readdirSync(dir).forEach((file) => {
-      const absolute = path.join(dir, file);
-      if (fs.statSync(absolute).isDirectory()) {
-        return getFilesList(absolute, pathList);
-      } else {
-        return pathList.push(absolute);
-      }
-    });
+    fs.readdirSync(dir)
+      .filter((file) => {
+        if (options.exclude) {
+          if (options.exclude(file)) {
+            return false;
+          }
+        }
+        return true;
+      })
+      .forEach((file) => {
+        const absolute = path.join(dir, file);
+
+        if (fs.statSync(absolute).isDirectory()) {
+          return getFilesList(absolute, pathList, options);
+        } else {
+          return pathList.push(absolute);
+        }
+      });
   }
 
   return pathList;
 };
 
-export const getGlobBasePath = (globString: string, pathSep = '/') => {
+export const getGlobBasePath = (globString: string, pathSep = path.sep) => {
   const globParts = globString.split(pathSep);
 
   let magicIndex = 0;
@@ -28,7 +42,7 @@ export const getGlobBasePath = (globString: string, pathSep = '/') => {
     }
   }
 
-  const result: string = globParts.splice(0, magicIndex).join('/');
+  const result: string = globParts.splice(0, magicIndex).join(pathSep);
   return result;
 };
 

@@ -18,5 +18,6 @@ export default defineConfig({
     ['./static/site1', '/root'],
     ['./static/_common', '/root'],
     ['./static/_common/foo.json', '/root/page1/foo2.json'],
+    ['./static/_globs/*.png', '/root/globs'],
   ],
 });

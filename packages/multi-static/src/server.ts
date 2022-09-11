@@ -15,7 +15,7 @@ import {
 } from './config';
 import { getGlobBasePath, pathBelongsTo } from './utils/files';
 import { reverse } from 'ramda';
-import { escapeRegExp } from './utils/helpers';
+import { hasUnderscoreAtFileNameStart, relativePath, uniPathSep } from './utils/helpers';
 
 export const startServer = async (config: MultiStaticConfig): Promise<https.Server | http.Server> => {
   const originalCustomOptions = config.customOptions;
@@ -53,20 +53,21 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
       // Если роут попадает под условие servePath
       if (pathBelongsTo(reqPath, servePath)) {
-        const subReqPath = reqPath.replace(new RegExp(`^${escapeRegExp(servePath)}`, ''), '');
+        const subReqPath = relativePath(reqPath, servePath);
 
         let fileSrc: string | undefined;
 
+        let shouldExclude = true;
         if (glob.hasMagic(localPath)) {
           // Если glob
-          const filePaths = glob.sync(localPath);
+          const filePaths = glob.sync(localPath).map((i) => path.resolve(i));
 
           filePaths.forEach((filePath) => {
             // Часть пути до файла в основе которой магия glob
-            const globFilePart = filePath.replace(new RegExp(`^${escapeRegExp(getGlobBasePath(localPath))}`), '');
+            const globFilePart = relativePath(filePath, getGlobBasePath(localPath));
 
-            if (globFilePart === subReqPath) {
-              fileSrc = path.join(process.cwd(), filePath);
+            if (uniPathSep(globFilePart, '/') === subReqPath) {
+              fileSrc = filePath;
             }
           });
         } else if (
@@ -76,20 +77,20 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
         ) {
           // Если соло-файл
           fileSrc = localPath;
+          shouldExclude = false;
         } else {
           // Если папка
           fileSrc = path.join(localPath, subReqPath);
         }
 
+        if (shouldExclude) {
+          if (hasUnderscoreAtFileNameStart(reqPath)) {
+            continue;
+          }
+        }
+
         if (fileSrc) {
           const mode = 'dev';
-
-          if (config.exclude) {
-            const excludeResult = await config.exclude(reqPath);
-            if (excludeResult) {
-              continue;
-            }
-          }
 
           for (const transformer of [...config.transformers, defaultStreamTransformer]) {
             const file = {

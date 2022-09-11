@@ -5,7 +5,7 @@ import glob from 'glob';
 import fs from 'fs-extra';
 import path from 'path';
 import { reverse } from 'ramda';
-import { escapeRegExp } from './utils/helpers';
+import { escapeRegExp, hasUnderscoreAtFileNameStart, relativePath } from './utils/helpers';
 
 export const build = async (config: MultiStaticConfig) => {
   const originalCustomOptions = config.customOptions;
@@ -26,12 +26,19 @@ export const build = async (config: MultiStaticConfig) => {
         // Путь без магической части
         localBasePath = getGlobBasePath(localPath);
 
-        return glob.sync(localPath).map((i) => path.resolve(i));
+        return glob
+          .sync(localPath)
+          .map((i) => path.resolve(i))
+          .filter((filePath) => {
+            filePath = relativePath(filePath, localBasePath);
+            const isExcluded = hasUnderscoreAtFileNameStart(filePath);
+            return !isExcluded;
+          });
       } else if (fs.lstatSync(localPath).isDirectory()) {
         // Путь как он есть
         localBasePath = localPath;
 
-        return getFilesList(localPath);
+        return getFilesList(localPath, [], { exclude: hasUnderscoreAtFileNameStart });
       } else {
         // Путь без самого имени файла
         localBasePath = localPath.replace(/\/[^/]+$/, '');
@@ -63,15 +70,6 @@ export const build = async (config: MultiStaticConfig) => {
       // ---------------------------
 
       const mode = 'build';
-
-      if (config.exclude) {
-        const excludeResult = await config.exclude(reqPath);
-        if (excludeResult) {
-          continue;
-        }
-      }
-
-      // console.log(srcPath, reqPath);
 
       for (const transformer of [...config.transformers, defaultStreamTransformer]) {
         const file = {
