@@ -16,7 +16,7 @@ export const build = async (config: MultiStaticConfig) => {
   const originalCustomOptions = config.customOptions;
 
   if (config.onBeforeBuild) {
-    await config.onBeforeBuild();
+    await config.onBeforeBuild({ config });
   }
 
   const processedServePaths = new Set();
@@ -115,6 +115,6 @@ export const build = async (config: MultiStaticConfig) => {
   }
 
   if (config.onAfterBuild) {
-    await config.onAfterBuild();
+    await config.onAfterBuild({ config });
   }
 };

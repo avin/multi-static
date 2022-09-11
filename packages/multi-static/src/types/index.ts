@@ -73,10 +73,10 @@ export interface MultiStaticConfig {
   rewriteServeLocationInBuildMode: (servLocation: string) => string;
 
   /** Функция вызываемая до сборки */
-  onBeforeBuild?: () => Promise<void> | void;
+  onBeforeBuild?: (params: { config: MultiStaticConfig }) => Promise<void> | void;
 
   /** Функция вызываемая после сборки */
-  onAfterBuild?: () => Promise<void> | void;
+  onAfterBuild?: (params: { config: MultiStaticConfig }) => Promise<void> | void;
 
   /** Run before setup Express App middlewares */
   onBeforeSetupMiddleware?: (params: { app: Express; config: MultiStaticConfig }) => MaybePromise<void>;

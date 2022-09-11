@@ -45,8 +45,8 @@ const config = defineConfig({
     },
   ],
 
-  beforeBuild() {
-    console.info(`+ removing ${this.buildPath}`);
+  onBeforeBuild({ config }) {
+    console.info(`+ removing ${config.buildPath}`);
     fs.removeSync(this.buildPath as string);
   },
 });
