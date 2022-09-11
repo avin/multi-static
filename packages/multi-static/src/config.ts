@@ -56,13 +56,13 @@ export const defaultFileReader = ({ file }: { file: File }) => {
 };
 
 export const defaultWriteContent: WriteContentFunc = async ({ file, content, buildPath }) => {
-  const dstPath = path.join(buildPath, file.reqPath);
+  const dstPath = path.join(buildPath, file.servePath);
   await fs.ensureFile(dstPath);
   await fs.writeFile(dstPath, content);
 };
 
 export const defaultSendResponse: SendResponseFunc = ({ content, file, res }) => {
-  const mimeType = mime.lookup(file.reqPath);
+  const mimeType = mime.lookup(file.servePath);
   if (mimeType) {
     res.setHeader('Content-Type', mimeType);
   }
@@ -73,14 +73,14 @@ export const defaultStreamTransformer: Partial<Transformer> = {
   test: defaultTest,
   processors: [({ file }) => fs.createReadStream(file.srcPath)],
   sendResponse: ({ content, file, res }) => {
-    const mimeType = mime.lookup(file.reqPath);
+    const mimeType = mime.lookup(file.servePath);
     if (mimeType) {
       res.setHeader('Content-Type', mimeType);
     }
     (content as Stream).pipe(res);
   },
   writeContent: async ({ file, content, buildPath }) => {
-    const dstPath = path.join(buildPath, file.reqPath);
+    const dstPath = path.join(buildPath, file.servePath);
     await fs.ensureFile(dstPath);
     const writeStream = fs.createWriteStream(dstPath);
     (content as Stream).pipe(writeStream);
@@ -143,13 +143,13 @@ export const readConfig = async (userConfigSrc: string | undefined) => {
 
 // Mix content of _options.js files to pageOptions of current config
 export const mixInCustomPageOptions = async ({
-  reqPath,
+  servePath,
   config,
   originalCustomOptions,
   mode,
   optionsFileName,
 }: {
-  reqPath: string;
+  servePath: string;
   config: MultiStaticConfig;
   originalCustomOptions: Record<string, unknown>;
   mode: 'build' | 'dev';
@@ -157,7 +157,7 @@ export const mixInCustomPageOptions = async ({
 }) => {
   let newCustomOptions = {};
 
-  const pathArr = reqPath.split('/').slice(0, -1);
+  const pathArr = servePath.split('/').slice(0, -1);
   while (pathArr.length) {
     const optionsPath = pathArr.join('/') + '/' + optionsFileName;
 

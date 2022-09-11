@@ -35,9 +35,9 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
   });
 
   app.use(async function (req, res, next) {
-    const reqPath = req.path;
+    const servePath = req.path;
     await mixInCustomPageOptions({
-      reqPath,
+      servePath,
       config,
       originalCustomOptions,
       mode: 'dev',
@@ -46,45 +46,45 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
     // ---------------------------
 
-    for (let [localPath, servePath] of reverse(config.mapping)) {
-      servePath = config.mappingDevLocationRewrite(servePath);
+    for (let [srcLocation, serveLocation] of reverse(config.mapping)) {
+      serveLocation = config.mappingDevLocationRewrite(serveLocation);
 
-      localPath = path.join(process.cwd(), localPath);
+      srcLocation = path.join(process.cwd(), srcLocation);
 
-      // Если роут попадает под условие servePath
-      if (pathBelongsTo(reqPath, servePath)) {
-        const subReqPath = relativePath(reqPath, servePath);
+      // Если роут попадает под условие serveLocation
+      if (pathBelongsTo(servePath, serveLocation)) {
+        const subServePath = relativePath(servePath, serveLocation);
 
         let fileSrc: string | undefined;
 
         let shouldExclude = true;
-        if (glob.hasMagic(localPath)) {
+        if (glob.hasMagic(srcLocation)) {
           // Если glob
-          const filePaths = glob.sync(localPath).map((i) => path.resolve(i));
+          const filePaths = glob.sync(srcLocation).map((i) => path.resolve(i));
 
           filePaths.forEach((filePath) => {
             // Часть пути до файла в основе которой магия glob
-            const globFilePart = relativePath(filePath, getGlobBasePath(localPath));
+            const globFilePart = relativePath(filePath, getGlobBasePath(srcLocation));
 
-            if (uniPathSep(globFilePart, '/') === subReqPath) {
+            if (uniPathSep(globFilePart, '/') === subServePath) {
               fileSrc = filePath;
             }
           });
         } else if (
-          fs.existsSync(localPath) &&
-          !fs.lstatSync(localPath).isDirectory() &&
-          localPath.endsWith(subReqPath)
+          fs.existsSync(srcLocation) &&
+          !fs.lstatSync(srcLocation).isDirectory() &&
+          srcLocation.endsWith(subServePath)
         ) {
           // Если соло-файл
-          fileSrc = localPath;
+          fileSrc = srcLocation;
           shouldExclude = false;
         } else {
           // Если папка
-          fileSrc = path.join(localPath, subReqPath);
+          fileSrc = path.join(srcLocation, subServePath);
         }
 
         if (shouldExclude) {
-          if (hasUnderscoreAtFileNameStart(reqPath)) {
+          if (hasUnderscoreAtFileNameStart(servePath)) {
             continue;
           }
         }
@@ -95,8 +95,8 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
           for (const transformer of [...config.transformers, defaultStreamTransformer]) {
             const file = {
               srcPath: fileSrc,
-              dstPath: path.join(config.buildPath, reqPath),
-              reqPath,
+              dstPath: path.join(config.buildPath, servePath),
+              servePath,
             };
 
             const ctx = {};

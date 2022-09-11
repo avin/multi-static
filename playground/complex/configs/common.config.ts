@@ -26,7 +26,7 @@ export default defineConfig({
     // ------------
     {
       beforeTest: ({ file, mode }) => {
-        file.reqPath = file.reqPath.replace(/\.scss$/, '.css');
+        file.servePath = file.servePath.replace(/\.scss$/, '.css');
         file.srcPath = file.srcPath.replace(/\.css$/, '.scss');
       },
       test: makeTest({
@@ -53,9 +53,9 @@ export default defineConfig({
         let cachedWebpackMiddleware = _webpackMiddlewaresCache[file.srcPath];
 
         if (!cachedWebpackMiddleware) {
-          const reqPathArr = file.reqPath.split('/');
-          const reqFileName = reqPathArr.slice(-1)[0];
-          const reqFolder = reqPathArr.slice(0, -1).join('/');
+          const servePathArr = file.servePath.split('/');
+          const reqFileName = servePathArr.slice(-1)[0];
+          const reqFolder = servePathArr.slice(0, -1).join('/');
 
           const config = generateWebpackConfig({
             mode: 'development',
@@ -75,7 +75,7 @@ export default defineConfig({
         cachedWebpackMiddleware(req, res, next);
       },
       writeContent: async ({ file, buildPath }) => {
-        const dstArr = file.reqPath.split('/');
+        const dstArr = file.servePath.split('/');
         const dstFileName = dstArr.slice(-1)[0];
         const dstFolder = dstArr.slice(0, -1).join('/');
 

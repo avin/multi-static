@@ -10,8 +10,6 @@ const config = defineConfig({
     ...localhostCerts(),
   },
 
-  exclude: (dstPath) => dstPath.includes('favicon.ico'),
-
   transformers: [
     {
       test: makeTest({
@@ -28,8 +26,8 @@ const config = defineConfig({
       ],
     },
     {
-      beforeTest: ({ file, mode }) => {
-        file.dstPath = file.dstPath.replace(/\.scss$/, '.css');
+      beforeTest: ({ file }) => {
+        file.servePath = file.servePath.replace(/\.scss$/, '.css');
         file.srcPath = file.srcPath.replace(/\.css$/, '.scss');
       },
       test: makeTest({

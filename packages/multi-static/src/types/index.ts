@@ -4,7 +4,7 @@ export type MaybePromise<T> = T | Promise<T>;
 
 export interface File {
   srcPath: string;
-  reqPath: string;
+  servePath: string;
 }
 
 export type Ctx = Record<string, any>;

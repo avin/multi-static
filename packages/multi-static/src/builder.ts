@@ -12,55 +12,55 @@ export const build = async (config: MultiStaticConfig) => {
 
   await config.beforeBuild();
 
-  const processedReqPaths = new Set();
+  const processedServePaths = new Set();
 
   // Copy files according to the list from config.mapping
-  for (let [localPath, servePath] of reverse(config.mapping)) {
-    servePath = config.mappingBuildLocationRewrite(servePath);
+  for (let [srcLocation, serveLocation] of reverse(config.mapping)) {
+    serveLocation = config.mappingBuildLocationRewrite(serveLocation);
 
-    localPath = path.join(process.cwd(), localPath);
-    let localBasePath: string;
+    srcLocation = path.join(process.cwd(), srcLocation);
+    let srcBasePath: string;
 
     const files = (() => {
-      if (glob.hasMagic(localPath)) {
+      if (glob.hasMagic(srcLocation)) {
         // Путь без магической части
-        localBasePath = getGlobBasePath(localPath);
+        srcBasePath = getGlobBasePath(srcLocation);
 
         return glob
-          .sync(localPath)
+          .sync(srcLocation)
           .map((i) => path.resolve(i))
           .filter((filePath) => {
-            filePath = relativePath(filePath, localBasePath);
+            filePath = relativePath(filePath, srcBasePath);
             const isExcluded = hasUnderscoreAtFileNameStart(filePath);
             return !isExcluded;
           });
-      } else if (fs.lstatSync(localPath).isDirectory()) {
+      } else if (fs.lstatSync(srcLocation).isDirectory()) {
         // Путь как он есть
-        localBasePath = localPath;
+        srcBasePath = srcLocation;
 
-        return getFilesList(localPath, [], { exclude: hasUnderscoreAtFileNameStart });
+        return getFilesList(srcLocation, [], { exclude: hasUnderscoreAtFileNameStart });
       } else {
         // Путь без самого имени файла
-        localBasePath = localPath.replace(/\/[^/]+$/, '');
+        srcBasePath = srcLocation.replace(/\/[^/]+$/, '');
 
-        return [localPath];
+        return [srcLocation];
       }
     })();
 
     for (const srcPath of files) {
-      const reqPath =
-        servePath +
+      const servePath =
+        serveLocation +
         srcPath
-          .replace(new RegExp(`^${escapeRegExp(localBasePath)}`, ''), '')
+          .replace(new RegExp(`^${escapeRegExp(srcBasePath)}`, ''), '')
           .replace(new RegExp(escapeRegExp(path.sep), 'g'), '/');
 
-      if (processedReqPaths.has(reqPath)) {
+      if (processedServePaths.has(servePath)) {
         continue;
       }
-      processedReqPaths.add(reqPath);
+      processedServePaths.add(servePath);
 
       await mixInCustomPageOptions({
-        reqPath,
+        servePath,
         config,
         originalCustomOptions,
         mode: 'build',
@@ -74,7 +74,7 @@ export const build = async (config: MultiStaticConfig) => {
       for (const transformer of [...config.transformers, defaultStreamTransformer]) {
         const file = {
           srcPath,
-          reqPath,
+          servePath,
         };
 
         const ctx = {};
