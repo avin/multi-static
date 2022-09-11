@@ -119,20 +119,20 @@ export default defineConfig({
     },
   ],
 
-  onBeforeBuild() {
-    console.info('> beforeBuild start...');
+  onBeforeBuild({ config }) {
+    console.info('> onBeforeBuild start...');
 
-    console.info(`+ removing ${this.buildPath}`);
-    fs.removeSync(this.buildPath as string);
+    console.info(`+ removing ${config.buildPath}`);
+    fs.removeSync(config.buildPath as string);
 
-    console.info('> beforeBuild end.\n');
+    console.info('> onBeforeBuild end.\n');
   },
 
-  onAfterBuild() {
-    console.info('> afterBuild start...');
+  onAfterBuild({ config }) {
+    console.info('> onAfterBuild start...');
 
     // Process tags with links to files and substitute prefixes with hashes for links
-    getFilesList('./build')
+    getFilesList(config.buildPath)
       .filter((i) => i.endsWith('.html'))
       .forEach((htmlFile) => {
         staticHashVersion({
@@ -141,7 +141,7 @@ export default defineConfig({
         });
       });
 
-    console.info('> afterBuild end\n');
+    console.info('> onAfterBuild end\n');
   },
 
   onBeforeSetupMiddleware({ app }) {
