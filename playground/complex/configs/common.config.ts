@@ -144,7 +144,7 @@ export default defineConfig({
     console.info('> afterBuild end\n');
   },
 
-  beforeDevStart({ app }) {
+  onBeforeSetupMiddleware({ app }) {
     mockerApi(app, path.resolve(__dirname, './mockerApi/index.js'));
   },
 });

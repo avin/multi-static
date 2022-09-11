@@ -14,17 +14,18 @@ import {
   mixInCustomPageOptions,
 } from './config';
 import { getGlobBasePath, pathBelongsTo } from './utils/files';
-import { reverse } from 'ramda';
-import { hasUnderscoreAtFileNameStart, relativePath, uniPathSep } from './utils/helpers';
+import { hasUnderscoreAtFileNameStart, relativePath, reverse, uniPathSep } from './utils/helpers';
 
 export const startServer = async (config: MultiStaticConfig): Promise<https.Server | http.Server> => {
   const originalCustomOptions = config.customOptions;
 
   const app = express();
 
-  await config.beforeDevStart({ app });
+  if (config.onBeforeSetupMiddleware) {
+    await config.onBeforeSetupMiddleware({ app, config });
+  }
 
-  // Хедеры пресекающие работу кеша в браузере
+  // Headers suppressing the cache in the browser
   app.use((req, res, next) => {
     res.setHeader('Surrogate-Control', 'no-store');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -41,7 +42,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
       config,
       originalCustomOptions,
       mode: 'dev',
-      optionsFileName: config.optionsFileName,
+      customOptionsFileName: config.customOptionsFileName,
     });
 
     // ---------------------------
@@ -132,6 +133,10 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
     next();
   });
 
+  if (config.onAfterSetupMiddleware) {
+    await config.onAfterSetupMiddleware({ app, config });
+  }
+
   const isHttps = !!config.http.key && !!config.http.cert;
 
   const server = (() => {
@@ -144,6 +149,10 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
   server.listen(config.http.port);
   const port = (server.address() as AddressInfo).port;
   console.info(`${isHttps ? 'https' : 'http'}://localhost:${port}/`);
+
+  if (config.onListening) {
+    await config.onListening({ app, config, server });
+  }
 
   return server;
 };

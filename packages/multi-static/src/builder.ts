@@ -1,16 +1,23 @@
 import { MultiStaticConfig } from './types';
-import { defaultStreamTransformer, defaultTest, defaultWriteContent, mixInCustomPageOptions } from './config';
+import {
+  defaultFileReader,
+  defaultStreamTransformer,
+  defaultTest,
+  defaultWriteContent,
+  mixInCustomPageOptions,
+} from './config';
 import { getFilesList, getGlobBasePath } from './utils/files';
 import glob from 'glob';
 import fs from 'fs-extra';
 import path from 'path';
-import { reverse } from 'ramda';
-import { escapeRegExp, hasUnderscoreAtFileNameStart, relativePath } from './utils/helpers';
+import { escapeRegExp, hasUnderscoreAtFileNameStart, relativePath, reverse } from './utils/helpers';
 
 export const build = async (config: MultiStaticConfig) => {
   const originalCustomOptions = config.customOptions;
 
-  await config.beforeBuild();
+  if (config.onBeforeBuild) {
+    await config.onBeforeBuild();
+  }
 
   const processedServePaths = new Set();
 
@@ -64,7 +71,7 @@ export const build = async (config: MultiStaticConfig) => {
         config,
         originalCustomOptions,
         mode: 'build',
-        optionsFileName: config.optionsFileName,
+        customOptionsFileName: config.customOptionsFileName,
       });
 
       // ---------------------------
@@ -94,7 +101,7 @@ export const build = async (config: MultiStaticConfig) => {
 
         // 3) Process
         let content: unknown;
-        for (const processor of transformer.processors || []) {
+        for (const processor of transformer.processors || [defaultFileReader]) {
           content = await processor({ content, file, mode, ctx, customOptions });
         }
 
@@ -107,5 +114,7 @@ export const build = async (config: MultiStaticConfig) => {
     }
   }
 
-  await config.afterBuild();
+  if (config.onAfterBuild) {
+    await config.onAfterBuild();
+  }
 };

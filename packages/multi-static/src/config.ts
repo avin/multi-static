@@ -17,7 +17,7 @@ import merge from 'lodash/merge';
 import readFirstLine from 'read-first-line';
 import mime from 'mime-types';
 import { Stream } from 'stream';
-import { escapeRegExp, noop } from './utils/helpers';
+import { escapeRegExp, relativePath, reverse } from './utils/helpers';
 
 export const makeTest = ({
   check,
@@ -109,11 +109,8 @@ export const defaultConfig: MultiStaticConfig = {
   transformers: [],
   mappingDevLocationRewrite: (dst) => dst,
   mappingBuildLocationRewrite: (dst) => dst,
-  beforeBuild: noop,
-  afterBuild: noop,
-  beforeDevStart: noop,
   customOptions: {},
-  optionsFileName: '_options.js',
+  customOptionsFileName: '_options.js',
 };
 
 export const defineConfig = (config: Partial<MultiStaticConfig>) => {
@@ -147,36 +144,36 @@ export const mixInCustomPageOptions = async ({
   config,
   originalCustomOptions,
   mode,
-  optionsFileName,
+  customOptionsFileName,
 }: {
   servePath: string;
   config: MultiStaticConfig;
   originalCustomOptions: Record<string, unknown>;
   mode: 'build' | 'dev';
-  optionsFileName: string;
+  customOptionsFileName: string;
 }) => {
   let newCustomOptions = {};
 
   const pathArr = servePath.split('/').slice(0, -1);
   while (pathArr.length) {
-    const optionsPath = pathArr.join('/') + '/' + optionsFileName;
+    const customOptionsPath = pathArr.join('/') + '/' + customOptionsFileName;
 
-    for (let [staticPath, serveLocation] of config.mapping) {
+    for (let [srcLocation, serveLocation] of config.mapping) {
+      srcLocation = path.join(process.cwd(), srcLocation);
+
       if (mode === 'build') {
         serveLocation = config.mappingBuildLocationRewrite(serveLocation);
       } else if (mode === 'dev') {
         serveLocation = config.mappingDevLocationRewrite(serveLocation);
       }
 
-      // If the route falls under the mapping record
-      if (optionsPath.startsWith(serveLocation)) {
-        const cleanServeLocation = optionsPath.replace(new RegExp(`^${escapeRegExp(serveLocation)}`, ''), '');
+      if (customOptionsPath.startsWith(serveLocation)) {
+        const customOptionsSubPath = relativePath(customOptionsPath, serveLocation);
 
-        // Composing the file name
-        const fileSrc = path.join(process.cwd(), staticPath, cleanServeLocation);
+        const filePath = path.join(srcLocation, customOptionsSubPath);
 
         try {
-          const newPageOptions = await extendedRequire<Record<string, unknown>>(fileSrc);
+          const newPageOptions = await extendedRequire<Record<string, unknown>>(filePath);
           newCustomOptions = merge({}, newPageOptions, newCustomOptions);
         } catch (e) {
           //

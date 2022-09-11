@@ -1,4 +1,6 @@
 import { Express, Response, Request, NextFunction } from 'express';
+import https from 'https';
+import http from 'http';
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -43,8 +45,6 @@ export type FileTestFunc = (params: CommonParams) => MaybePromise<boolean>;
 export type BeforeTestFunc = (params: CommonParams) => MaybePromise<void>;
 
 export interface Transformer {
-  // test: RegExp;
-  // reader: Reader;
   beforeTest?: BeforeTestFunc;
   test: FileTestFunc;
   processors: Processor[];
@@ -53,41 +53,51 @@ export interface Transformer {
 }
 
 export interface MultiStaticConfig {
-  /** Настройки web-сервера в dev режиме */
+  /** Web server settings (dev-mode server) */
   http: {
     port?: number;
     key?: string;
     cert?: string;
   };
 
-  /** Выходная папка для билда */
+  /** The path where the build files will be placed */
   buildPath: string;
 
-  /** Маппинг исходных файлов с тем как они должны быть расположены при сборке*/
+  /** Mapping the source files (srcPath) with how they should be located when building (servePath) */
   mapping: [string, string][];
 
-  /** ?? */
+  /** Rewrite serve location in dev mode */
   mappingDevLocationRewrite: (dst: string) => string;
 
-  /** ?? */
+  /** Rewrite serve location in build mode */
   mappingBuildLocationRewrite: (dst: string) => string;
 
   /** Функция вызываемая до сборки */
-  beforeBuild: () => Promise<void> | void;
+  onBeforeBuild?: () => Promise<void> | void;
 
   /** Функция вызываемая после сборки */
-  afterBuild: () => Promise<void> | void;
+  onAfterBuild?: () => Promise<void> | void;
 
-  /** Функция вызываемая до запуска web-сервера в dev режиме */
-  beforeDevStart: (params: { app?: Express }) => MaybePromise<void>;
+  /** Run before setup Express App middlewares */
+  onBeforeSetupMiddleware?: (params: { app: Express; config: MultiStaticConfig }) => MaybePromise<void>;
 
-  /** Дополнительные опции (могут использоваться обработчиками файлов) */
+  /** Run after setup Express App middlewares */
+  onAfterSetupMiddleware?: (params: { app: Express; config: MultiStaticConfig }) => MaybePromise<void>;
+
+  /** Run when server starts listening for connections */
+  onListening?: (params?: {
+    app: Express;
+    server: https.Server | http.Server;
+    config: MultiStaticConfig;
+  }) => MaybePromise<void>;
+
+  /** Additional options (can be used by file transformers) */
   customOptions: CustomOptions;
 
-  /** Имя файла с дополнительными опциями.
-   * Опции будут применимы ко всем файлам внутри этого каталога и к вложенным */
-  optionsFileName: string;
+  /** File name with custom options.
+   * The options will apply to all file transformers for files within this directory and to subfolders */
+  customOptionsFileName: string;
 
-  /** Трансформеры для dev-режима */
+  /** Transformers */
   transformers: Partial<Transformer>[];
 }
