@@ -119,7 +119,7 @@ export default defineConfig({
     },
   ],
 
-  beforeBuild() {
+  onBeforeBuild() {
     console.info('> beforeBuild start...');
 
     console.info(`+ removing ${this.buildPath}`);
@@ -128,7 +128,7 @@ export default defineConfig({
     console.info('> beforeBuild end.\n');
   },
 
-  afterBuild() {
+  onAfterBuild() {
     console.info('> afterBuild start...');
 
     // Process tags with links to files and substitute prefixes with hashes for links

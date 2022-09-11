@@ -23,7 +23,7 @@ export const build = async (config: MultiStaticConfig) => {
 
   // Copy files according to the list from config.mapping
   for (let [srcLocation, serveLocation] of reverse(config.mapping)) {
-    serveLocation = config.mappingBuildLocationRewrite(serveLocation);
+    serveLocation = config.rewriteServeLocationInBuildMode(serveLocation);
 
     srcLocation = path.join(process.cwd(), srcLocation);
     let srcBasePath: string;

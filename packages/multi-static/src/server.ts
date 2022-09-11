@@ -48,7 +48,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
     // ---------------------------
 
     for (let [srcLocation, serveLocation] of reverse(config.mapping)) {
-      serveLocation = config.mappingDevLocationRewrite(serveLocation);
+      serveLocation = config.rewriteServeLocationInDevMode(serveLocation);
 
       srcLocation = path.join(process.cwd(), srcLocation);
 

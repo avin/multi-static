@@ -67,10 +67,10 @@ export interface MultiStaticConfig {
   mapping: [string, string][];
 
   /** Rewrite serve location in dev mode */
-  mappingDevLocationRewrite: (dst: string) => string;
+  rewriteServeLocationInDevMode: (servLocation: string) => string;
 
   /** Rewrite serve location in build mode */
-  mappingBuildLocationRewrite: (dst: string) => string;
+  rewriteServeLocationInBuildMode: (servLocation: string) => string;
 
   /** Функция вызываемая до сборки */
   onBeforeBuild?: () => Promise<void> | void;

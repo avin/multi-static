@@ -17,7 +17,7 @@ import merge from 'lodash/merge';
 import readFirstLine from 'read-first-line';
 import mime from 'mime-types';
 import { Stream } from 'stream';
-import { escapeRegExp, relativePath, reverse } from './utils/helpers';
+import { relativePath } from './utils/helpers';
 
 export const makeTest = ({
   check,
@@ -107,8 +107,8 @@ export const defaultConfig: MultiStaticConfig = {
   buildPath: path.join(process.cwd(), 'build'),
   mapping: [],
   transformers: [],
-  mappingDevLocationRewrite: (dst) => dst,
-  mappingBuildLocationRewrite: (dst) => dst,
+  rewriteServeLocationInDevMode: (servLocation) => servLocation,
+  rewriteServeLocationInBuildMode: (servLocation) => servLocation,
   customOptions: {},
   customOptionsFileName: '_options.js',
 };
@@ -162,9 +162,9 @@ export const mixInCustomPageOptions = async ({
       srcLocation = path.join(process.cwd(), srcLocation);
 
       if (mode === 'build') {
-        serveLocation = config.mappingBuildLocationRewrite(serveLocation);
+        serveLocation = config.rewriteServeLocationInBuildMode(serveLocation);
       } else if (mode === 'dev') {
-        serveLocation = config.mappingDevLocationRewrite(serveLocation);
+        serveLocation = config.rewriteServeLocationInDevMode(serveLocation);
       }
 
       if (customOptionsPath.startsWith(serveLocation)) {
