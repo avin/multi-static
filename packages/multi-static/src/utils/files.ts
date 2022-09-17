@@ -47,8 +47,8 @@ export const getGlobBasePath = (globString: string, pathSep = path.sep) => {
 };
 
 export const pathBelongsTo = (oPath: string, cPath: string) => {
-  const oPathParts = oPath.split('/');
-  const cPathParts = cPath.split('/');
+  const oPathParts = oPath.split('/').filter(Boolean);
+  const cPathParts = cPath.split('/').filter(Boolean);
 
   let result = true;
 
