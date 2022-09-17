@@ -1,0 +1,17 @@
+{
+  "name": "playground-basic",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "multi-static dev",
+    "build": "multi-static build"
+  },
+  "dependencies": {
+    "localhost-certs": "^1.1.0",
+    "read-first-line": "^1.0.5",
+    "sass": "^1.54.8"
+  },
+  "keywords": [],
+  "author": "a.vinogradov",
+  "license": "ISC"
+}
