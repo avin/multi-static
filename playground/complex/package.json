@@ -1,8 +1,7 @@
 {
-  "name": "multi-static-example",
+  "name": "playground-complex",
   "version": "1.0.0",
-  "author": "Avin Lambrero",
-  "license": "MIT",
+  "private": true,
   "scripts": {
     "dev": "multi-static dev",
     "build": "multi-static build",
