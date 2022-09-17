@@ -1,7 +1,8 @@
 /* eslint-disable */
 import fs from 'fs-extra';
 import localhostCerts from 'localhost-certs';
-import { defineConfig, getFilesList, makeTest } from 'multi-static';
+import { defineConfig, makeTest } from 'multi-static';
+import { getFilesList } from 'multi-static/dist/utils';
 import path from 'path';
 import mockerApi from 'mocker-api';
 import webpack from 'webpack';

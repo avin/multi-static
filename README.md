@@ -1,5 +1,1 @@
 # Multi-static monorepo
-
-```js
-
-```
