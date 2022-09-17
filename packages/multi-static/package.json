@@ -13,7 +13,8 @@
   "scripts": {
     "prebuild": "rimraf ./dist",
     "build": "rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
-    "dev": "npm run prebuild && npm run build -- --watch"
+    "dev": "npm run prebuild && npm run build -- --watch",
+    "prepublishOnly": "yarn run build"
   },
   "bin": {
     "multi-static": "bin/multi-static.js"
