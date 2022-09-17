@@ -1,6 +1,6 @@
 {
   "name": "multi-static",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "Avin Lambrero",
   "license": "MIT",
   "main": "dist/index.cjs",
@@ -10,6 +10,11 @@
     "type": "git",
     "url": "https://github.com/avin/multi-static.git"
   },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
   "scripts": {
     "prebuild": "rimraf ./dist",
     "build": "rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
