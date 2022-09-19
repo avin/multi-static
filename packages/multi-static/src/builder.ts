@@ -10,7 +10,7 @@ import { getFilesList, getGlobBasePath } from './utils/files';
 import glob from 'glob';
 import fs from 'fs-extra';
 import path from 'path';
-import { escapeRegExp, hasUnderscoreAtFileNameStart, relativePath, reverse } from './utils/helpers';
+import { escapeRegExp, hasUnderscoreAtFileNameStart, relativePath } from './utils/helpers';
 
 export const build = async (config: MultiStaticConfig) => {
   const originalCustomOptions = config.customOptions;
@@ -22,11 +22,11 @@ export const build = async (config: MultiStaticConfig) => {
   const processedServePaths = new Set();
 
   // Copy files according to the list from config.mapping
-  for (let [srcLocation, serveLocation] of reverse(config.mapping)) {
+  for (let [srcLocation, serveLocation] of config.mapping) {
     serveLocation = config.rewriteServeLocationInBuildMode(serveLocation);
 
     srcLocation = path.join(process.cwd(), srcLocation);
-    let srcBasePath: string;
+    let srcBasePath!: string;
 
     const files = (() => {
       if (glob.hasMagic(srcLocation)) {
@@ -47,19 +47,23 @@ export const build = async (config: MultiStaticConfig) => {
 
         return getFilesList(srcLocation, [], { exclude: hasUnderscoreAtFileNameStart });
       } else {
-        // Путь без самого имени файла
-        srcBasePath = srcLocation.replace(/\/[^/]+$/, '');
-
+        // Соло файл
         return [srcLocation];
       }
     })();
 
     for (const srcPath of files) {
-      const servePath =
-        serveLocation +
-        srcPath
-          .replace(new RegExp(`^${escapeRegExp(srcBasePath)}`, ''), '')
-          .replace(new RegExp(escapeRegExp(path.sep), 'g'), '/');
+      const servePath = (() => {
+        if (!srcBasePath) {
+          return serveLocation;
+        }
+        return (
+          serveLocation +
+          srcPath
+            .replace(new RegExp(`^${escapeRegExp(srcBasePath)}`, ''), '')
+            .replace(new RegExp(escapeRegExp(path.sep), 'g'), '/')
+        );
+      })();
 
       if (processedServePaths.has(servePath)) {
         continue;

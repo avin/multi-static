@@ -19,5 +19,3 @@ export const relativePath = (filePath: string, replacingPath = process.cwd()) =>
 export const uniPathSep = (filePath: string, pathSep = '/') => {
   return filePath.replace(/[\\/]/g, '/');
 };
-
-export const reverse = <T>(arr: T[]) => [...arr].reverse();

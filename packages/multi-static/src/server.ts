@@ -14,7 +14,7 @@ import {
   mixInCustomPageOptions,
 } from './config';
 import { getGlobBasePath, pathBelongsTo } from './utils/files';
-import { hasUnderscoreAtFileNameStart, relativePath, reverse, uniPathSep } from './utils/helpers';
+import { hasUnderscoreAtFileNameStart, relativePath, uniPathSep } from './utils/helpers';
 
 export const startServer = async (config: MultiStaticConfig): Promise<https.Server | http.Server> => {
   const originalCustomOptions = config.customOptions;
@@ -47,7 +47,7 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
     // ---------------------------
 
-    for (let [srcLocation, serveLocation] of reverse(config.mapping)) {
+    for (let [srcLocation, serveLocation] of config.mapping) {
       serveLocation = config.rewriteServeLocationInDevMode(serveLocation);
 
       srcLocation = path.join(process.cwd(), srcLocation);

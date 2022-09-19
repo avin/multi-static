@@ -1,6 +1,6 @@
 {
   "name": "multi-static",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "author": "Avin Lambrero",
   "license": "MIT",
   "main": "dist/index.cjs",

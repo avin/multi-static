@@ -17,7 +17,7 @@ const bundle = (lib: string, config: RollupOptions): RollupOptions => ({
 });
 
 const result: RollupOptions[] = [];
-for (const lib of ['index', 'cli', 'utils']) {
+for (const lib of ['index', 'cli']) {
   result.push(
     bundle(lib, {
       plugins: [resolve(), esbuild()],
