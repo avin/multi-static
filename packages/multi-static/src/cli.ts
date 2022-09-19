@@ -2,16 +2,14 @@ import cac from 'cac';
 import { startServer } from './server';
 import { build } from './builder';
 import defu from 'defu';
-import { defaultConfig, readConfig } from './config';
+import { readConfig } from './config';
 
 const cli = cac('multi-static');
 
 cli
   .command('dev', 'Run dev server')
   .option('-c, --config <config>', 'Config')
-  .option('-p, --port <port>', 'Server port', {
-    default: defaultConfig.http.port,
-  })
+  .option('-p, --port <port>', 'Server port')
   .action(async (options: { config: string | undefined; port: number }) => {
     const config = defu({ http: { port: options.port } }, await readConfig(options.config));
 
