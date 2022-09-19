@@ -22,7 +22,12 @@ cli
   .action(async (options: { config: string }) => {
     const config = defu({}, await readConfig(options.config));
 
-    await build(config);
+    try {
+      await build(config);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
   });
 
 cli.help();
