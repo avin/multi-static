@@ -97,6 +97,12 @@ export const build = async (config: MultiStaticConfig) => {
           await transformer.beforeTest({ file, mode, ctx, customOptions });
         }
 
+        // Check if file already exists - then skip
+        const dstPath = path.join(config.buildPath, file.servePath);
+        if (await fs.pathExists(dstPath)) {
+          continue;
+        }
+
         // 1) Test
         const test = transformer.test || defaultTest;
         if (!(await test({ file, mode, ctx, customOptions }))) {
