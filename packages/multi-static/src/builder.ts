@@ -10,7 +10,7 @@ import { getFilesList, getGlobBasePath } from './utils/files';
 import glob from 'glob';
 import fs from 'fs-extra';
 import path from 'path';
-import { escapeRegExp, hasUnderscoreAtFileNameStart, relativePath } from './utils/helpers';
+import { escapeRegExp } from './utils/helpers';
 
 export const build = async (config: MultiStaticConfig) => {
   const originalCustomOptions = config.customOptions;
@@ -28,24 +28,34 @@ export const build = async (config: MultiStaticConfig) => {
     srcLocation = path.join(process.cwd(), srcLocation);
     let srcBasePath!: string;
 
+    const getServePath = (srcPath: string) => {
+      if (!srcBasePath) {
+        return serveLocation;
+      }
+      return (
+        serveLocation +
+        srcPath
+          .replace(new RegExp(`^${escapeRegExp(srcBasePath)}`, ''), '')
+          .replace(new RegExp(escapeRegExp(path.sep), 'g'), '/')
+      );
+    };
+
     const files = (() => {
       if (glob.hasMagic(srcLocation)) {
         // Путь без магической части
         srcBasePath = getGlobBasePath(srcLocation);
 
-        return glob
-          .sync(srcLocation)
-          .map((i) => path.resolve(i))
-          .filter((filePath) => {
-            filePath = relativePath(filePath, srcBasePath);
-            const isExcluded = hasUnderscoreAtFileNameStart(filePath);
-            return !isExcluded;
-          });
+        return glob.sync(srcLocation).map((i) => path.resolve(i));
       } else if (fs.lstatSync(srcLocation).isDirectory()) {
         // Путь как он есть
         srcBasePath = srcLocation;
 
-        return getFilesList(srcLocation, [], { exclude: hasUnderscoreAtFileNameStart });
+        return getFilesList(srcLocation, [], {
+          // Можно было бы убрать, но это ускоряет сборку
+          exclude: (filePath) => {
+            return config.exclude(getServePath(filePath));
+          },
+        });
       } else {
         // Соло файл
         return [srcLocation];
@@ -53,17 +63,11 @@ export const build = async (config: MultiStaticConfig) => {
     })();
 
     for (const srcPath of files) {
-      const servePath = (() => {
-        if (!srcBasePath) {
-          return serveLocation;
-        }
-        return (
-          serveLocation +
-          srcPath
-            .replace(new RegExp(`^${escapeRegExp(srcBasePath)}`, ''), '')
-            .replace(new RegExp(escapeRegExp(path.sep), 'g'), '/')
-        );
-      })();
+      const servePath = getServePath(srcPath);
+
+      if (config.exclude(servePath)) {
+        continue;
+      }
 
       if (processedServePaths.has(servePath)) {
         continue;

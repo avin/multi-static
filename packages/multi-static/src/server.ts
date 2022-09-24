@@ -14,7 +14,7 @@ import {
   mixInCustomPageOptions,
 } from './config';
 import { getGlobBasePath, pathBelongsTo } from './utils/files';
-import { hasUnderscoreAtFileNameStart, relativePath, uniPathSep } from './utils/helpers';
+import { relativePath, uniPathSep } from './utils/helpers';
 
 export const startServer = async (config: MultiStaticConfig): Promise<https.Server | http.Server> => {
   const originalCustomOptions = config.customOptions;
@@ -58,7 +58,6 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
 
         let fileSrc: string | undefined;
 
-        let shouldExclude = true;
         if (glob.hasMagic(srcLocation)) {
           // Если glob
           const filePaths = glob.sync(srcLocation).map((i) => path.resolve(i));
@@ -78,25 +77,21 @@ export const startServer = async (config: MultiStaticConfig): Promise<https.Serv
         ) {
           // Если соло-файл
           fileSrc = srcLocation;
-          shouldExclude = false;
         } else {
           // Если папка
           fileSrc = path.join(srcLocation, subServePath);
         }
 
-        if (shouldExclude) {
-          if (hasUnderscoreAtFileNameStart(servePath)) {
+        if (fileSrc) {
+          if (config.exclude(servePath)) {
             continue;
           }
-        }
 
-        if (fileSrc) {
           const mode = 'dev';
 
           for (const transformer of [...config.transformers, defaultStreamTransformer]) {
             const file = {
               srcPath: fileSrc,
-              dstPath: path.join(config.buildPath, servePath),
               servePath,
             };
 

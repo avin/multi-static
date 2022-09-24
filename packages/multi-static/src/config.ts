@@ -17,7 +17,7 @@ import merge from 'lodash/merge';
 import readFirstLine from 'read-first-line';
 import mime from 'mime-types';
 import { Stream } from 'stream';
-import { relativePath } from './utils/helpers';
+import { hasUnderscoreAtFileNameStart, relativePath } from './utils/helpers';
 
 export const makeTest = ({
   check,
@@ -109,6 +109,7 @@ export const defaultConfig: MultiStaticConfig = {
   transformers: [],
   rewriteServeLocationInDevMode: (servLocation) => servLocation,
   rewriteServeLocationInBuildMode: (servLocation) => servLocation,
+  exclude: (servePath) => hasUnderscoreAtFileNameStart(servePath),
   customOptions: {},
   customOptionsFileName: '_options.js',
 };

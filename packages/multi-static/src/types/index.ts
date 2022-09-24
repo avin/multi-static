@@ -84,6 +84,8 @@ export interface MultiStaticConfig {
   /** Run after setup Express App middlewares */
   onAfterSetupMiddleware?: (params: { app: Express; config: MultiStaticConfig }) => MaybePromise<void>;
 
+  exclude: (servePath: string) => boolean;
+
   /** Run when server starts listening for connections */
   onListening?: (params?: {
     app: Express;

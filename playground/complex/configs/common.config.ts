@@ -128,6 +128,18 @@ export default defineConfig({
     console.info('> onBeforeBuild end.\n');
   },
 
+  exclude(filePath) {
+    const pathParts = filePath.split(/\//);
+    for (const regexp of [/^_/, /^node_modules$/, /^exclude/]) {
+      for (const part of pathParts) {
+        if (regexp.test(part)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  },
+
   onAfterBuild({ config }) {
     console.info('> onAfterBuild start...');
 
