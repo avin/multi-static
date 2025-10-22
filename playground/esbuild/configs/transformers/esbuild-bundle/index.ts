@@ -8,12 +8,12 @@ const staticRoot = path.resolve(process.cwd(), 'static');
 const virtualOutDir = path.join(process.cwd(), '.multi-static-esbuild');
 
 type BuildContextEntry = {
-  context: esbuild.BuildContext<esbuild.BuildOptions>;
-  pending?: Promise<esbuild.BuildResult<esbuild.BuildOptions>>;
+  context: esbuild.BuildContext;
+  pending?: Promise<esbuild.BuildResult>;
 };
 
 const buildCache = new Map<string, BuildContextEntry>();
-const registeredContexts = new Set<esbuild.BuildContext<esbuild.BuildOptions>>();
+const registeredContexts = new Set<esbuild.BuildContext>();
 let shutdownHooksAttached = false;
 
 const attachShutdownHooks = () => {
