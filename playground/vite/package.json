@@ -1,0 +1,13 @@
+{
+  "name": "playground-vite",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "multi-static dev --config multi-static.config.ts",
+    "build": "multi-static build --config multi-static.config.ts"
+  },
+  "dependencies": {
+    "localhost-certs": "^1.1.0",
+    "vite": "^4.5.0"
+  }
+}
