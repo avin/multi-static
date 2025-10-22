@@ -3,7 +3,8 @@ import { existsSync } from 'fs';
 import { mkdir, writeFile } from 'fs/promises';
 import { makeTest, Transformer } from 'multi-static';
 import { build as viteBuild } from 'vite';
-import type { InlineConfig, OutputAsset, OutputChunk, RollupOutput } from 'vite';
+import type { InlineConfig } from 'vite';
+import type { OutputAsset, OutputChunk, RollupOutput } from 'rollup';
 
 const staticRoot = path.resolve(process.cwd(), 'static');
 const viteConfigFile = path.resolve(process.cwd(), 'configs/transformers/vite-bundle/vite.config.ts');
