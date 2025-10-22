@@ -219,7 +219,8 @@ const writeRollupOutput = async (buildPath: string, output: RollupOutput) => {
       if (typeof item.source === 'string') {
         await writeFile(destination, item.source, 'utf8');
       } else {
-        await writeFile(destination, Buffer.from(item.source));
+        const data = item.source instanceof Uint8Array ? item.source : new Uint8Array(item.source);
+        await writeFile(destination, data);
       }
     } else {
       await writeFile(destination, item.code, 'utf8');
