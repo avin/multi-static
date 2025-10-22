@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "multi-static dev --config multi-static.config.ts",
-    "build": "multi-static build --config multi-static.config.ts"
+    "dev": "multi-static dev --config ./configs/multi-static.config.ts",
+    "build": "multi-static build --config ./configs/multi-static.config.ts"
   },
   "dependencies": {
     "localhost-certs": "^1.1.0",
