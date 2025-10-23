@@ -1,0 +1,17 @@
+{
+  "name": "playground-rollup",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "multi-static dev --config ./configs/multi-static.config.ts",
+    "build": "multi-static build --config ./configs/multi-static.config.ts"
+  },
+  "dependencies": {
+    "localhost-certs": "^1.1.0",
+    "rollup": "^4.24.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-commonjs": "^25.0.8",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "typescript": "^5.4.0"
+  }
+}
