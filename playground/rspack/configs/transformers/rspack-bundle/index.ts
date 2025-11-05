@@ -215,7 +215,7 @@ const collectAssets = async (entry: CompilerEntry, stats: Stats) => {
 
   await Promise.all(
     assetNames.map(async (assetName) => {
-      const normalizedName = normalizeServePath(assetName as string);
+      const normalizedName = normalizeServePath(assetName);
       const fullPath = path.join(entry.compiler.outputPath, normalizedName);
       const content = await readFsFile(entry.fs, fullPath);
       assets.set(normalizedName, content);
