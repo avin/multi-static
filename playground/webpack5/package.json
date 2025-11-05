@@ -1,0 +1,16 @@
+{
+  "name": "playground-webpack",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "multi-static dev --config ./configs/multi-static.config.ts",
+    "build": "multi-static build --config ./configs/multi-static.config.ts"
+  },
+  "dependencies": {
+    "localhost-certs": "^1.1.0",
+    "webpack": "^5.95.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.0",
+    "memfs": "^3.6.0"
+  }
+}
